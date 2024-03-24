@@ -24,8 +24,8 @@ def get_handshake() -> requests.Response:
 
 async def handler(url: str, headers: dict, data: json):
     async with websockets.connect(url, extra_headers=headers) as ws:
-        ws.send(data)
         while 1:
+            await ws.send(data)
             response = await ws.recv()
             print(response)
 
@@ -33,7 +33,12 @@ async def handler(url: str, headers: dict, data: json):
 async def establish_websocket_session(token: str, cookie: str):
     raw_url = 'livetiming.formula1.com/signalr'
     # Create websocket headers with cookie
-    wss_data = json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["TimingData", "Heartbeat"]], "I": 1})
+    wss_data = json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
+                            "ExtrapolatedClock", "TopThree", "RcmSeries",
+                            "TimingStats", "TimingAppData",
+                            "WeatherData", "TrackStatus", "DriverList",
+                            "RaceControlMessages", "SessionInfo",
+                            "SessionData", "LapCount", "TimingData"]], "I": 1})
     wss_headers = {'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip,identity', 'Cookie': cookie}
     wss_parameters = {"clientProtocol": "1.5", "transport": "websockets", "connectionToken": token, "connectionData": [{"name":"Streaming"}]}
     wss_action = 'connect'
