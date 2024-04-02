@@ -2,7 +2,8 @@ import requests
 import json
 import asyncio
 import websockets
-import urllib                            
+import urllib      
+import time                      
 
 
 def create_url(type: str, url: str, action: str, parameters: dict) -> str:
@@ -23,11 +24,17 @@ def get_handshake() -> requests.Response:
 
 
 async def handler(url: str, headers: dict, data: json):
+    output_file = open('output.txt', 'a')
+    i = 0
     async with websockets.connect(url, extra_headers=headers) as ws:
-        while 1:
+        while i < 100:
+            start_time = time.time()
             await ws.send(data)
             response = await ws.recv()
-            print(response)
+            time_split = time.time()-start_time
+            if 'R' in json.loads(response):
+                output_file.write(str(time_split) + ' ' + response + '\n')
+            i += 1
 
 
 async def establish_websocket_session(token: str, cookie: str):
