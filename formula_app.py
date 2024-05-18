@@ -1,6 +1,5 @@
 import requests
 import json
-import asyncio
 import websockets
 import urllib      
 import time
@@ -24,19 +23,26 @@ def get_handshake() -> requests.Response:
     return response
 
 
-async def handler(url: str, headers: dict, data: json):
+def handler(url: str, headers: dict, data: json):
     output_file = open(f'output-{datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
-    async with websockets.connect(url, extra_headers=headers) as ws:
+    heartbeat = None
+    with websockets.connect(url, extra_headers=headers) as ws:
         while True:
-            # start_time = time.time()
-            await ws.send(data)
-            response = await ws.recv()
-            # time_split = time.time()-start_time
-            if 'R' in json.loads(response):
+            ws.send(data)
+            response = ws.recv()
+            response_dict = json.loads(response)
+            if 'R' in response_dict:
+                current_heartbeat = response_dict['R']['ExtrapolatedClock']['Utc']
+                print(heartbeat, current_heartbeat)
+                if heartbeat is None:
+                    heartbeat = current_heartbeat
+                    output_file.write(response + '\n')
+                elif current_heartbeat != heartbeat:
+                    heartbeat = current_heartbeat
                 # response_dict = json.loads(response)
                 # cardata_z = response_dict['R']['CarData.z'] + 'CarData.z.jsonStream' 
                 # await get_car_data(cardata_z, headers=headers)
-                output_file.write(response + '\n')
+                    output_file.write(response + '\n')
                 time.sleep(0.5)
 
 
@@ -49,7 +55,7 @@ async def get_car_data(data_path, headers):
 """
 
 
-async def establish_websocket_session(token: str, cookie: str):
+def establish_websocket_session(token: str, cookie: str):
     # Create websocket headers with cookie
     wss_data = json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
                             "ExtrapolatedClock", "TopThree", "RcmSeries",
@@ -63,18 +69,18 @@ async def establish_websocket_session(token: str, cookie: str):
     wss_connection_type = 'websocket'
     # Create websocket connection url with conneciton token
     wss_url = create_url(wss_connection_type, wss_action, wss_parameters)
-    await handler(wss_url, wss_headers, wss_data)
+    handler(wss_url, wss_headers, wss_data)
 
 
-async def connection():
+def connection():
     # headers_encoded = json.dumps(headers) if headers is not None else ''
     get_response = get_handshake()
     # Retreve connection token from response body
     token = json.loads(get_response.content)['ConnectionToken']
     # Retrieve cookie from response header
     cookie = get_response.headers['Set-Cookie']
-    await establish_websocket_session(token, cookie)
+    establish_websocket_session(token, cookie)
 
 
 if __name__ == "__main__":
-    asyncio.run(connection())
+    connection()
