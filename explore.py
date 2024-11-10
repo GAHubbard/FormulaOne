@@ -1,112 +1,133 @@
+"""
+Package for searching through jsons via CLI
+Author: Matthew Raburn
+Date: September 15 2024
+"""
 import sys
 import json
+from typing import Iterable  # Confused about this
 
+class JsonLevel:
+    """
+    This class handles a level of json data
+    """
 
-def list_key(key: str) -> None:
-    """
-    Prints out key unless at top of file
-    :param key: currrent key
-    :return:
-    """
-    if key == "":
-        print(f"Top of Json: {sys.argv[1]}")
-    else:
-        print(f"Key: {key}")
-    print("________")
+    def __init__(self, level_object: Iterable, name: str = ""):
+        """
+        Constructs a JsonLevel object.
+        :param level_object: Dictionary or list object.
+        :param name: Name of the level. If no level name given then it is Top Level.
+        """
+        self.level_object = level_object
+        self.name = name
 
+    def __repr__(self) -> str:
+        """
+        Overrides __repr__.
+        :return: a string representation of the JsonLevel.
+        """
+        print_return: str = ""  # What gets returned eventually
+        level_name: str = self.name  # Name of level
 
-def list_keys(d: dict or list) -> list[str]:
-    """
-    Prints values and returns values in a dictionary
-    :param d: dictionary
-    :return: values as a list of strings
-    """
-    keys = []
-    if isinstance(d, list):
-        index = 0
-        while index < len(d):
-            value_type = str(type(d[index]))
-            value_type = value_type.split('\'')[1]
-            if isinstance(d[index], dict):
-                print(f"{index}: {value_type}")
-                keys.append(str(index))
-            else:
-                print(f"{d[index]}: {value_type}")
-            index = index + 1
-    else:
-        for key in d:
-            value_type = str(type(d[key]))
-            value_type = value_type.split('\'')[1]
-            if isinstance(d[key], dict) or isinstance(d[key], list):
-                print(f"{key}: {value_type}")
-                keys.append(str(key))
-            else:
-                print(f"{key}: {d[key]} {value_type}")
-    return keys
+        # If no level name is set then it is the Top level with no name
+        if self.name == "":
+            level_name = "Top"
 
+        if isinstance(self.level_object,dict): # if level is a dictionary
+            type_of_level: str = "dict"
 
-def list_node(key: str, current_node: dict or list) -> list[str]:
-    """
-    returns values of a node in a dictionary and prints contents of a node
-    :param key: current key
-    :param current_node: current node in dictionary
-    :return: list of dictionaries
-    """
-    list_key(key)
-    keys = list_keys(current_node)
-    print("")
-    return keys
+            # use key value pairs for dictionary
+            for key, value in self.level_object.items():
+                if isinstance(value, dict):
+                    print_return = f"{print_return}\t{key}: dict\n"
+                    continue
+
+                if isinstance(value, list):
+                    print_return = f"{print_return}\t{key}: list\n"
+                    continue
+
+                print_return = f"{print_return}\t{key}: {value}: {type(value)}\n"  # Normal situation
+
+        else:  # if level is a list
+            type_of_level: str = "list"
+
+            x = 0   # must use this to know what number element
+            for element in self.level_object:
+                if isinstance(element, dict):
+                    print_return = f"{print_return}\tElement: {x}: dict\n"
+                    x = x + 1
+                    continue
+                if isinstance(element, list):
+                    print_return = f"{print_return}\tElement: {x}: list\n"
+                    x = x + 1
+                    continue
+                print_return = f"{print_return}\tElement: {x}: {element}: {type(element)}\n"
+                x = x + 1
+
+        # Add it all together
+        print_return = f"JSON level: {level_name} {type_of_level}:\n" + f"{print_return}"
+
+        return print_return
+
+    def __getitem__(self, item) -> dict or list:
+
+        if isinstance(self.level_object, dict):
+            for key, value in self.level_object.items():
+                if item == key: return value
+
+        if isinstance(self.level_object, list):
+            for element in self.level_object:
+                if item == element: return element
+
+        return None
 
 
 def json_explore(file_path: str) -> None:
+    """
+    Lets the user explore a json
+    :param file_path: file path to json
+    :return:
+    """
     print("Q to quit")
     print("^ to go up")
     print("key value to go into\n")
 
     with open(file_path, 'r') as f:  # open json file as dictionary d
         json_file = f
-        d = json.load(json_file)
+        level = json.load(json_file)
 
-    i = ""
-    node_list: list[dict] = []
-    key_list: list[str] = []
-    node_list.append(d)  # add the top of the dictionary to the node list
-    key_list.append("")
-    while i != 'Q':  # create exploration loop
+    json_object = JsonLevel(level)  # create the json level object with no name cause it begins at the top level
 
-        sub_dicts = list_node(key_list[-1], node_list[-1])
+    json_list: list[JsonLevel] = [json_object]  # create a list of json levels. This keeps track of the level
 
-        i = input(":")  # get input of where the user wants to go
-
-        if i in sub_dicts:
-            key_list.append(i)
-            if isinstance(node_list[-1], list):
-                node_list.append(node_list[-1][int(i)])
+    # while loop handles the input from the user
+    while True:
+        level = json_list[-1]  # last element in the json list is current level
+        print(level)  # prints the level of the json
+        i = input(':')
+        if i == 'Q':
+            break  # exit while loop
+        elif i == '^':
+            if level.name == "":  # if at the top of the level and use asks to go up then just repeat the prompt
+                continue
             else:
-                node_list.append(node_list[-1][i])
-
-        elif i == "^" and key_list[-1] != "":
-            key_list.pop()
-            node_list.pop()
-
-    sys.exit()
-
-
-def help_print() -> None:
-    print("explore [filepath]")
-
-
-if __name__ == "__main__":
-
-    # if user doesn't give enough arguments
-    if len(sys.argv) == 1:
-        print("Must give path to json file.")
-        print("run \"explore help\" for help")
-
-    # if user gives correct arguments
-    if len(sys.argv) == 2:
-        # if user uses the help argument
-        if sys.argv[1] == "help":
-            help_print()
+                json_list.pop()  # if not at the top of the list then pop off top element and continue while loop
+                continue
         else:
-            json_explore(sys.argv[1])
+            if isinstance(level.level_object, list):  # if level object is a list then convert i to int
+                i = int(i)
+
+            # Check to see if level object is a dictionary
+            # then check to see if input from user matches a key
+            # lastly only append the value of the key if it is a list or a dictionary
+            if isinstance(level.level_object, dict):
+                if i in level.level_object and (isinstance(level.level_object[i], dict) or isinstance(level.level_object[i], list)):
+                    json_list.append(JsonLevel(level[i],i))  # appends the new level to the json_list stack as a dictionary level
+
+            # Check to see if level object is a list
+            # then check to see if the index is actually found in the list
+            # lastly only append the value of the element if it is a list or a dictionary
+            else:
+                if i in range(len(level.level_object)) and (isinstance(level.level_object[i], list) or isinstance(level.level_object[i], dict)):
+                    # appends the new level to the json_list stack as a list level
+                    json_list.append(JsonLevel(level.level_object[i],i))
