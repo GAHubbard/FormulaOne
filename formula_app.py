@@ -9,6 +9,9 @@ import asyncio
 
 
 def create_url(type: str, action: str, parameters: dict) -> str:
+    """
+    Returns url based given on connection type, action and parameters
+    """
     url = 'livetiming.formula1.com/signalr'
     connection_type = 'wss' if type == 'websocket' else 'https'
     parameters_encoded = urllib.parse.urlencode(parameters) 
@@ -17,12 +20,32 @@ def create_url(type: str, action: str, parameters: dict) -> str:
 
 
 def get_handshake() -> Response:
+    """
+    Creates handshake connection and returns token and cookie
+    """
     get_parameters = {"connectionData": [{"name":"Streaming"}], "clientProtocol": "1.5"}
     get_action = 'negotiate'
     get_connection_type = 'rest'
     get_url = create_url(get_connection_type, get_action, get_parameters)
     response = requests.get(get_url)
     return response
+
+
+def create_websocket_connection(token: str, cookie: str):
+    # Create websocket headers with cookie
+    wss_data = json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
+                            "ExtrapolatedClock", "TopThree", "RcmSeries",
+                            "TimingStats", "TimingAppData",
+                            "WeatherData", "TrackStatus", "DriverList",
+                            "RaceControlMessages", "SessionInfo",
+                            "SessionData", "LapCount", "TimingData"]], "I": 1})
+    wss_headers = {'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip,identity', 'Cookie': cookie}
+    wss_parameters = {"clientProtocol": "1.5", "transport": "websockets", "connectionToken": token, "connectionData": [{"name":"Streaming"}]}
+    wss_action = 'connect'
+    wss_connection_type = 'websocket'
+    # Create websocket connection url with conneciton token
+    wss_url = create_url(wss_connection_type, wss_action, wss_parameters)
+    return wss_url, wss_headers, wss_data
 
 
 async def handler(url: str, headers: dict, data: json):
@@ -57,32 +80,16 @@ async def get_car_data(data_path, headers):
 """
 
 
-async def establish_websocket_session(token: str, cookie: str):
-    # Create websocket headers with cookie
-    wss_data = json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
-                            "ExtrapolatedClock", "TopThree", "RcmSeries",
-                            "TimingStats", "TimingAppData",
-                            "WeatherData", "TrackStatus", "DriverList",
-                            "RaceControlMessages", "SessionInfo",
-                            "SessionData", "LapCount", "TimingData"]], "I": 1})
-    wss_headers = {'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip,identity', 'Cookie': cookie}
-    wss_parameters = {"clientProtocol": "1.5", "transport": "websockets", "connectionToken": token, "connectionData": [{"name":"Streaming"}]}
-    wss_action = 'connect'
-    wss_connection_type = 'websocket'
-    # Create websocket connection url with conneciton token
-    wss_url = create_url(wss_connection_type, wss_action, wss_parameters)
-    await handler(wss_url, wss_headers, wss_data)
-
-
-async def connection():
+async def main():
     # headers_encoded = json.dumps(headers) if headers is not None else ''
     get_response = get_handshake()
     # Retreve connection token from response body
     token = json.loads(get_response.content)['ConnectionToken']
     # Retrieve cookie from response header
     cookie = get_response.headers['Set-Cookie']
-    await establish_websocket_session(token, cookie)
+    websocket = create_websocket_connection(token, cookie)
+    await handler(websocket[0], websocket[1], websocket[2])
 
 
 if __name__ == "__main__":
-    asyncio.run(connection())
+    asyncio.run(main())
