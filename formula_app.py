@@ -1,10 +1,12 @@
 import requests
+from requests import Response
 import json
 import websockets
 import urllib      
 import time
-import datetime                    
+from datetime import datetime                    
 import asyncio
+
 
 def create_url(type: str, action: str, parameters: dict) -> str:
     url = 'livetiming.formula1.com/signalr'
@@ -14,7 +16,7 @@ def create_url(type: str, action: str, parameters: dict) -> str:
     return url_unparsed
 
 
-def get_handshake() -> requests.Response:
+def get_handshake() -> Response:
     get_parameters = {"connectionData": [{"name":"Streaming"}], "clientProtocol": "1.5"}
     get_action = 'negotiate'
     get_connection_type = 'rest'
@@ -24,9 +26,9 @@ def get_handshake() -> requests.Response:
 
 
 async def handler(url: str, headers: dict, data: json):
-    output_file = open(f'output-{datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
+    output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
     heartbeat = None
-    async with websockets.connect(url, extra_headers=headers) as ws:
+    async with websockets.connect(url, additional_headers=headers) as ws:
         while True:
             await ws.send(data)
             response = await ws.recv()
