@@ -48,27 +48,36 @@ def create_websocket_connection(token: str, cookie: str):
     return wss_url, wss_headers, wss_data
 
 
-async def handler(url: str, headers: dict, data: json):
+async def data_handler(url: str, headers: dict, data: json):
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
-    heartbeat = None
+    previous_heartbeat, count = None, 0
     async with websockets.connect(url, additional_headers=headers) as ws:
+        start_time = time.time()
         while True:
             await ws.send(data)
             response = await ws.recv()
             response_dict = json.loads(response)
-            if 'R' in response_dict:
-                current_heartbeat = response_dict['R']['Heartbeat']['Utc']
-                print(heartbeat, current_heartbeat)
-                if heartbeat is None:
-                    heartbeat = current_heartbeat
+            end_time = time.time()
+            length = end_time - start_time
+            output_file.write(response + '\n')
+            time.sleep(0.5)
+            """if 'R' in response_dict:
+                current_heartbeat = response_dict['R']['ExtrapolatedClock']['Utc']
+                print(previous_heartbeat, current_heartbeat)
+                if previous_heartbeat is None:
+                    previous_heartbeat = current_heartbeat
                     output_file.write(response + '\n')
-                elif current_heartbeat != heartbeat:
-                    heartbeat = current_heartbeat
+                elif current_heartbeat != previous_heartbeat:
+                    count = 0
+                    print(previous_heartbeat, current_heartbeat)
+                    previous_heartbeat = current_heartbeat
                 # response_dict = json.loads(response)
                 # cardata_z = response_dict['R']['CarData.z'] + 'CarData.z.jsonStream' 
                 # await get_car_data(cardata_z, headers=headers)
                     output_file.write(response + '\n')
-                time.sleep(0.5)
+                else:
+                    count =+ 1
+                exit() if count >= 1000 else time.sleep(0.5)"""
 
 
 """
@@ -88,8 +97,12 @@ async def main():
     # Retrieve cookie from response header
     cookie = get_response.headers['Set-Cookie']
     websocket = create_websocket_connection(token, cookie)
-    await handler(websocket[0], websocket[1], websocket[2])
+    await data_handler(websocket[0], websocket[1], websocket[2])
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     asyncio.run(main())
+    end_time = time.time()
+    length = end_time - start_time
+    print(length)
