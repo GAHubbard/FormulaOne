@@ -8,7 +8,7 @@ from datetime import datetime
 import asyncio
 
 
-def create_url(type: str, action: str, parameters: dict) -> str:
+def create_url(type: str, action: str, parameters = {}) -> str:
     """
     Returns url based given on connection type, action and parameters
     """
@@ -23,10 +23,10 @@ def get_handshake() -> Response:
     """
     Creates handshake connection and returns token and cookie
     """
-    get_parameters = {"connectionData": [{"name":"Streaming"}], "clientProtocol": "1.5"}
+    #get_parameters = {} #{"connectionData": [{"name":"Streaming"}], "clientProtocol": "1.5"}
     get_action = 'negotiate'
     get_connection_type = 'rest'
-    get_url = create_url(get_connection_type, get_action, get_parameters)
+    get_url = create_url(get_connection_type, get_action)#, get_parameter
     response = requests.get(get_url)
     return response
 
