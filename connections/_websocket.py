@@ -5,20 +5,8 @@ Description
 import websockets
 import requests
 from requests import Response
-from urllib.parse import urlencode
 import json
-
-class Utilities:
-
-
-    def create_url(url: str, connection_type: str, action: str, parameters = {}) -> str:
-        """
-        Returns encoded url with given url connection type, action and parameters
-        """
-        parameters_encoded = urlencode(parameters) 
-        encoded_url = f'{connection_type}://{url}/{action}{"?" if parameters_encoded else ""}{parameters_encoded}'
-        return encoded_url
-
+from ._utilities import Utilities
 
 class WebSocket:
 
@@ -29,7 +17,6 @@ class WebSocket:
         self._token = None
         self._headers = {'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip,identity', 'Cookie': self._cookie}
         self._parameters = {"clientProtocol": "1.5", "transport": "websockets", "connectionToken": self._token, "connectionData": [{"name":"Streaming"}]}
-        pass
 
 
     def _create_handshake(self) -> str:
@@ -74,21 +61,11 @@ class WebSocket:
         websocket_url = Utilities.create_url(self.url,  websocket_connection_type, websocket_action)
         return websocket_url
 
-    async def session(self):
-        with websockets.connect(self._create_websocket(), additional_headers=self._headers) as session:
-            self._send_data(session)
-            while True:
-                response = await self._receive_data(session)
-
+    def connection(self):
+        return websockets.connect(self._create_websocket(), additional_headers=self._headers)
 
     def _send_data(self, ws):
-        topics = json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
-                            "ExtrapolatedClock", "TopThree", "RcmSeries",
-                            "TimingStats", "TimingAppData",
-                            "WeatherData", "TrackStatus", "DriverList",
-                            "RaceControlMessages", "SessionInfo",
-                            "SessionData", "LapCount", "TimingData"]], "I": 1})
-        ws.send(topics)
+        ws.send(self._topics)
 
 
     def _receive_data(self, ws):
