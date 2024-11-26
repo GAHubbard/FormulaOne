@@ -97,6 +97,7 @@ async def main():
     # Retrieve cookie from response header
     cookie = get_response.headers['Set-Cookie']
     websocket = create_websocket_connection(token, cookie)
+    print(websocket)
     await data_handler(websocket[0], websocket[1], websocket[2])
 
 
