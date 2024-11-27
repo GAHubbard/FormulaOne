@@ -56,7 +56,7 @@ class WebSocket:
 
     def _get_token_and_cookie(self) -> str:
         """
-        Returns token from handshake response body
+        Returns token from handshake response body and cookie from header
         """
         response = self._initiate_handshake()
         self._token = json.loads(response.content)['ConnectionToken']
@@ -73,19 +73,16 @@ class WebSocket:
         websocket_url = Utilities.create_url(self.url,  websocket_connection_type, websocket_action, self._parameters)
         return websocket_url
 
-    async def connection(self) -> ClientConnection:
+
+    def connection(self) -> ClientConnection:
         return  websockets.connect(self._create_websocket(), additional_headers=self._headers)
-        """        async with websockets.connect(self._create_websocket(), additional_headers=self._headers) as conn:
-            await self.send_data(conn)
-            data = await self.receive_data(conn)
-            print(data)"""
 
 
-    def send_data(self, ws: ClientConnection):
-        ws.send(self._topics)
+    def send_data(self, ws):
+        return ws.send(self._topics)
 
 
-    def receive_data(self, ws: ClientConnection):
+    def receive_data(self, ws):
         data = ws.recv()
         return data
         
