@@ -51,7 +51,8 @@ def create_websocket_connection(token: str, cookie: str):
 async def data_handler(url: str, headers: dict, data: json):
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
     previous_heartbeat, count = None, 0
-    async with websockets.connect(url, additional_headers=headers) as ws:
+    connection = websockets.connect(url, additional_headers=headers)
+    async with connection as ws:
         start_time = time.time()
         while True:
             await ws.send(data)
