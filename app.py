@@ -20,19 +20,20 @@ def data_handler():
             data = session.receive_data(conn)
             data_decoded = json.loads(data)
             if 'R' in data_decoded:
-                output_file.write(data + '\n')
-                current_heartbeat = data_decoded['R']['ExtrapolatedClock']['Utc']
+                current_heartbeat = data_decoded['R']['Heartbeat']['Utc']
                 if current_heartbeat != previous_heartbeat:
                     count = 0
                     previous_heartbeat = current_heartbeat
+                    output_file.write(data + '\n')
                 else:
-                    count =+ 1
+                    count += 1
                 new_data = False if count >= 100 else session.send_data(conn)
 
 
 def main():
     data_handler_thread = Thread(target=data_handler())
     data_handler_thread.start()
+
 
 if __name__ == "__main__":
     main()
