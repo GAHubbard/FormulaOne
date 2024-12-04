@@ -2,21 +2,22 @@
 I don't know, I guess some stuff goes here
 """
 
-from connections import WebSocket
-import asyncio
-import time
+from connections import WebSockets
 from datetime import datetime
 import json
+from threading import Thread
+from contextlib import closing
 
 
-async def main():
+def data_handler():
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
-    session = WebSocket()
-    async with session.connection() as conn:
-        await session.send_data(conn)
+    session = WebSockets()
+    with closing(session.connection()) as conn:
+        session.send_data(conn)
         previous_heartbeat = None
-        while True:
-            data = await session.receive_data(conn)
+        new_data = True
+        while new_data:
+            data = session.receive_data(conn)
             data_decoded = json.loads(data)
             if 'R' in data_decoded:
                 output_file.write(data + '\n')
@@ -26,8 +27,12 @@ async def main():
                     previous_heartbeat = current_heartbeat
                 else:
                     count =+ 1
-                exit() if count >= 100 else await session.send_data(conn)
+                new_data = False if count >= 100 else session.send_data(conn)
 
+
+def main():
+    data_handler_thread = Thread(target=data_handler())
+    data_handler_thread.start()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -2,15 +2,16 @@
 Description
 """
 
-import websockets
-from websockets.asyncio.client import ClientConnection
+
+import websocket
+from websocket import WebSocket
 import requests
 from requests import Response
 import json
 from ._utilities import Utilities
 
 
-class WebSocket:
+class WebSockets:
 
 
     def __init__(self):
@@ -74,15 +75,15 @@ class WebSocket:
         return websocket_url
 
 
-    def connection(self) -> ClientConnection:
-        return  websockets.connect(self._create_websocket(), additional_headers=self._headers)
+    def connection(self) -> WebSocket:
+        return  websocket.create_connection(self._create_websocket(), additional_headers=self._headers)
 
 
-    def send_data(self, ws):
+    def send_data(self, ws: WebSocket):
         return ws.send(self._topics)
 
 
-    def receive_data(self, ws):
+    def receive_data(self, ws: WebSocket):
         data = ws.recv()
         return data
         
