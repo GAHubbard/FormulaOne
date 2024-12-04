@@ -1,12 +1,16 @@
+import sys
 import requests
 from requests import Response
 import json
-import websockets
+import websocket
 import urllib      
 import time
-from datetime import datetime                    
+from datetime import datetime
+import threading
 import asyncio
+import aioconsole  # package used for awaiting io inputs from user
 
+running: bool = True
 
 def create_url(type: str, action: str, parameters = {}) -> str:
     """
@@ -48,37 +52,29 @@ def create_websocket_connection(token: str, cookie: str):
     return wss_url, wss_headers, wss_data
 
 
-async def data_handler(url: str, headers: dict, data: json):
+def data_retriever(url: str, headers: dict, data: json):
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
-    previous_heartbeat, count = None, 0
-    connection = websockets.connect(url, additional_headers=headers)
-    async with connection as ws:
-        start_time = time.time()
-        while True:
-            await ws.send(data)
-            response = await ws.recv()
-            response_dict = json.loads(response)
-            end_time = time.time()
-            length = end_time - start_time
-            output_file.write(response + '\n')
-            time.sleep(0.5)
-            """if 'R' in response_dict:
-                current_heartbeat = response_dict['R']['ExtrapolatedClock']['Utc']
-                print(previous_heartbeat, current_heartbeat)
-                if previous_heartbeat is None:
-                    previous_heartbeat = current_heartbeat
-                    output_file.write(response + '\n')
-                elif current_heartbeat != previous_heartbeat:
-                    count = 0
-                    print(previous_heartbeat, current_heartbeat)
-                    previous_heartbeat = current_heartbeat
-                # response_dict = json.loads(response)
-                # cardata_z = response_dict['R']['CarData.z'] + 'CarData.z.jsonStream' 
-                # await get_car_data(cardata_z, headers=headers)
-                    output_file.write(response + '\n')
-                else:
-                    count =+ 1
-                exit() if count >= 1000 else time.sleep(0.5)"""
+    last_heartbeat = None
+    global running
+    ws = websocket.create_connection(url, additional_headers=headers)
+    while running:
+        print("\nin the retrieve data loop")
+        ws.send(data)
+        response = ws.recv()
+        response_dict = json.loads(response)
+        if 'R' in response_dict:
+            new_heartbeat = response_dict['R']['Heartbeat']['Utc']
+            #print(last_heartbeat, new_heartbeat)
+            if last_heartbeat is None:
+                last_heartbeat = new_heartbeat
+                output_file.write(response + '\n')
+            elif last_heartbeat != new_heartbeat:
+                last_heartbeat = new_heartbeat
+            # response_dict = json.loads(response)
+            # cardata_z = response_dict['R']['CarData.z'] + 'CarData.z.jsonStream'
+            # await get_car_data(cardata_z, headers=headers)
+                output_file.write(response + '\n')
+        time.sleep(5)
 
 
 """
@@ -90,21 +86,35 @@ async def get_car_data(data_path, headers):
 """
 
 
-async def main():
+def user_input_cli():
+    """
+    User input loop
+    :return:
+    """
+    global running
+
+    while running:
+        i: str = input("Press Q to quit:")
+        if i == 'Q':
+            running = False
+
+
+def main():
     # headers_encoded = json.dumps(headers) if headers is not None else ''
     get_response = get_handshake()
-    # Retreve connection token from response body
+    # Retrieve connection token from response body
     token = json.loads(get_response.content)['ConnectionToken']
     # Retrieve cookie from response header
     cookie = get_response.headers['Set-Cookie']
     websocket = create_websocket_connection(token, cookie)
-    print(websocket)
-    await data_handler(websocket[0], websocket[1], websocket[2])
 
+    user_input_thread = threading.Thread(target=user_input_cli)
+    data_retrieval_thread = threading.Thread(target=data_retriever, args=(websocket[0],websocket[1],websocket[2]))
+
+    data_retrieval_thread.start()
+    user_input_thread.start()
+    data_retrieval_thread.join()
+    data_retrieval_thread.join()
 
 if __name__ == "__main__":
-    start_time = time.time()
-    asyncio.run(main())
-    end_time = time.time()
-    length = end_time - start_time
-    print(length)
+    main()
