@@ -8,7 +8,7 @@ from websocket import WebSocket
 import requests
 from requests import Response
 import json
-from ._utilities import Utilities
+from ._utils import *
 
 
 class WebSockets:
@@ -28,7 +28,7 @@ class WebSockets:
     
     @property
     def _headers(self):
-        return {'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip,identity', 'Cookie': self._cookie}
+        return {'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip,identity', 'Cookie': self._cookie, 'Connection': 'keep-alive, Upgrade'}
     
 
     @property
@@ -42,7 +42,7 @@ class WebSockets:
         """
         handshake_action = 'negotiate'
         handshake_connection_type = 'https'
-        handshake_url = Utilities.create_url(self.url, handshake_connection_type, handshake_action)
+        handshake_url = create_url(self.url, handshake_connection_type, handshake_action)
         return handshake_url
     
 
@@ -71,12 +71,12 @@ class WebSockets:
         websocket_action = 'connect'
         websocket_connection_type = 'wss'
         self._get_token_and_cookie()
-        websocket_url = Utilities.create_url(self.url,  websocket_connection_type, websocket_action, self._parameters)
+        websocket_url = create_url(self.url, websocket_connection_type, websocket_action, self._parameters)
         return websocket_url
 
 
     def connection(self) -> WebSocket:
-        return  websocket.create_connection(self._create_websocket(), additional_headers=self._headers)
+        return  websocket.create_connection(self._create_websocket(), header=self._headers) #
 
 
     def send_data(self, ws: WebSocket):

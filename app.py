@@ -14,20 +14,21 @@ def data_handler():
     session = WebSockets()
     with closing(session.connection()) as conn:
         session.send_data(conn)
+        stale_data_count = 0
         previous_heartbeat = None
-        new_data = True
-        while new_data:
+        stale_data = False
+        while not (stale_data == True):
             data = session.receive_data(conn)
             data_decoded = json.loads(data)
             if 'R' in data_decoded:
                 current_heartbeat = data_decoded['R']['Heartbeat']['Utc']
                 if current_heartbeat != previous_heartbeat:
-                    count = 0
+                    stale_data_count = 0
                     previous_heartbeat = current_heartbeat
                     output_file.write(data + '\n')
                 else:
-                    count += 1
-                new_data = False if count >= 100 else session.send_data(conn)
+                    stale_data_count += 1
+                stale_data = True if stale_data_count >= 100 else session.send_data(conn)
 
 
 def main():
