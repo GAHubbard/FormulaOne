@@ -1,6 +1,0 @@
-"""
-Description
-"""
-
-class Http:
-    pass
