@@ -1,5 +1,7 @@
 """
-Description
+This file contains all the support functions
+Created by: Graham Hubbard
+Date: 2024-12-28
 """
 
 

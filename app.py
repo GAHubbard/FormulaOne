@@ -2,7 +2,7 @@
 I don't know, I guess some stuff goes here
 """
 
-from connections import WebSockets
+from f1websocket import F1WebSocket
 from datetime import datetime
 import json
 from threading import Thread
@@ -10,8 +10,9 @@ from contextlib import closing
 
 
 def data_handler():
+    print(datetime.now().strftime('%Y'))
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
-    session = WebSockets()
+    session = F1WebSocket()
     with closing(session.connection()) as conn:
         session.send_data(conn)
         stale_data_count = 0
