@@ -13,7 +13,7 @@ def data_handler():
     session = F1WebSocket()
     with closing(session.connection()) as conn:
         session.send_data(conn)
-        stale_data_count = 1
+        stale_data_count = 0
         previous_heartbeat = None
         stale_data = False
         while not (stale_data == True):
