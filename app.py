@@ -23,7 +23,7 @@ def data_handler():
     # Ensure websocket closes in case of errors
     with closing(session.connection()) as conn:
 
-        session.send_data(conn)     # Send message to SignalR endpoint to request specific data
+        conn.send(session.invoke_data)     # Send message to SignalR endpoint to request specific data
 
         stale_data_count = 0            # Stale data count set to 0
         previous_heartbeat = None       # Previous Heartbeat timestamp
