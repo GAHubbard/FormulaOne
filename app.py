@@ -41,7 +41,7 @@ def data_handler():
                     output_file.write(str(data) + '\n')
                 else:
                     stale_data_count += 1
-                stale_data = True if stale_data_count >= 100 else session.send_data(conn)
+                data_handler_loop = False if stale_data_count >= 100 else session.send_data(conn)
 
 
 def main():
