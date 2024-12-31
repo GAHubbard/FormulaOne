@@ -91,12 +91,4 @@ class F1WebSocket:
         """
         self._increase_message_count()
         return ws.send(self._topics)
-
-    def receive_data(self, ws: WebSocket) -> dict:
-        """
-        Recieves SignalR data from websocket connection
-        """
-        data_encoded = ws.recv()
-        data = json.loads(data_encoded)
-        return data
         
