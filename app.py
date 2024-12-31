@@ -32,21 +32,28 @@ def data_handler():
         # data handler loop
         while data_handler_loop:
 
-            data = json.loads(conn.recv())
-            if 'R' in data:
-                current_heartbeat = parser.parse(data['R']['Heartbeat']['Utc'])
+            data = json.loads(conn.recv())  # receive data back from the server and convert to a dictionary
+
+            if 'R' in data:  # If the message received from the server actually has race data in  it
+
+                current_heartbeat = parser.parse(data['R']['Heartbeat']['Utc'])  # Convert heartbeat to datetime obj
+
+                # if previous heartbeat datetime has not been set or earlier in time to the current heart beat
                 if previous_heartbeat is None or current_heartbeat > previous_heartbeat:
-                    stale_data_count = 0
-                    previous_heartbeat = current_heartbeat
-                    output_file.write(str(data) + '\n')
+                    stale_data_count = 0                    # reset the stale data counter to 0
+                    previous_heartbeat = current_heartbeat  # update the previous heartbeat datetime
+                    output_file.write(str(data) + '\n')     # output the new data (not stale) to the file
                 else:
-                    stale_data_count += 1
+                    stale_data_count += 1                   # add the stale data counter up
+
+                # set the loop boolean to False if the stale data counter gets to 100 or ask the server for more data
                 data_handler_loop = False if stale_data_count >= 100 else session.send_data(conn)
 
 
 def main():
     data_handler_thread = Thread(target=data_handler())
     data_handler_thread.start()
+    data_handler_thread.join()
 
 
 if __name__ == "__main__":
