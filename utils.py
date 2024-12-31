@@ -4,8 +4,8 @@ Created by: Graham Hubbard
 Date: 2024-12-28
 """
 
+
 import urllib.parse as url
-#from urllib.parse import urlencode
 
 
 def create_url(scheme: str, netloc: str, path: str, params: str = '', query_parameters: dict = {}, fragment: str = "") -> str:
@@ -15,6 +15,4 @@ def create_url(scheme: str, netloc: str, path: str, params: str = '', query_para
     query = url.urlencode(query_parameters)
     url_tuple = (scheme, netloc, path, params, query, fragment)
     unparsed_url = url.urlunparse(url_tuple)
-    #encoded_url = f'{connection_type}://{netl}/{action}{"?" if parameters else ""}{parameters_encoded}'
-    print(unparsed_url)
     return unparsed_url
