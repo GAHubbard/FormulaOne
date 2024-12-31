@@ -10,7 +10,6 @@ from contextlib import closing
 
 
 def data_handler():
-    print(datetime.now().strftime('%Y'))
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
     session = F1WebSocket()
     with closing(session.connection()) as conn:
@@ -20,9 +19,8 @@ def data_handler():
         stale_data = False
         while not (stale_data == True):
             data = session.receive_data(conn)
-            data_decoded = json.loads(data)
-            if 'R' in data_decoded:
-                current_heartbeat = data_decoded['R']['Heartbeat']['Utc']
+            if 'R' in data:
+                current_heartbeat = data['R']['Heartbeat']['Utc']
                 if current_heartbeat != previous_heartbeat:
                     stale_data_count = 0
                     previous_heartbeat = current_heartbeat
