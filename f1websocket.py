@@ -10,13 +10,13 @@ from websocket import WebSocket
 import requests
 from requests import Response
 import json
-from utils import *
+import utils
 
 
 class F1WebSocket:
 
     def __init__(self):
-        self.url = 'livetiming.formula1.com/signalr'
+        self.netloc = 'livetiming.formula1.com/signalr'
         self._cookie = None
         self._token = None
         self._message_count = 0
@@ -43,9 +43,9 @@ class F1WebSocket:
         """
         Returns url for handshake
         """
-        handshake_action = 'negotiate'
-        handshake_connection_type = 'https'
-        handshake_url = create_url(self.url, handshake_connection_type, handshake_action)
+        handshake_path = '/negotiate'
+        handshake_scheme = 'https'
+        handshake_url = utils.create_url(scheme = handshake_scheme, netloc = self.netloc,  path = handshake_path)
         return handshake_url
 
     def _initiate_handshake(self) -> Response:
@@ -68,10 +68,10 @@ class F1WebSocket:
         """
         Returns url for websocket
         """
-        websocket_action = 'connect'
-        websocket_connection_type = 'wss'
+        websocket_path = '/connect'
+        websocket_scheme = 'wss'
         self._get_token_and_cookie()
-        websocket_url = create_url(self.url, websocket_connection_type, websocket_action, self._parameters)
+        websocket_url = utils.create_url(scheme = websocket_scheme, netloc = self.netloc, path = websocket_path, query_parameters = self._parameters)
         return websocket_url
 
     def connection(self) -> WebSocket:
