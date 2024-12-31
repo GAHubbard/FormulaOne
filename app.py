@@ -47,7 +47,7 @@ def data_handler():
                     stale_data_count += 1                   # add the stale data counter up
 
                 # set the loop boolean to False if the stale data counter gets to 100 or ask the server for more data
-                data_handler_loop = False if stale_data_count >= 100 else session.send_data(conn)
+                data_handler_loop = False if stale_data_count >= 100 else conn.send(session.invoke_data)
 
 
 def main():

@@ -30,7 +30,8 @@ class F1WebSocket:
         return {"clientProtocol": "1.5", "transport": "websockets", "connectionToken": self._token, "connectionData": [{"name":"Streaming"}]}
 
     @property
-    def _topics(self):
+    def invoke_data(self):
+        self._increase_message_count()
         return json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
                             "ExtrapolatedClock", "TopThree", "RcmSeries",
                             "TimingStats", "TimingAppData",
@@ -84,11 +85,4 @@ class F1WebSocket:
         Increases message count by 1
         """
         self._message_count += 1
-
-    def send_data(self, ws: WebSocket):
-        """
-        Sends SignalR data over websocket connection
-        """
-        self._increase_message_count()
-        return ws.send(self._topics)
         
