@@ -7,7 +7,7 @@ from datetime import datetime
 import json
 from threading import Thread
 from contextlib import closing
-
+from dateutil import parser
 
 def data_handler():
     output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a')
@@ -20,8 +20,8 @@ def data_handler():
         while not (stale_data == True):
             data = session.receive_data(conn)
             if 'R' in data:
-                current_heartbeat = data['R']['Heartbeat']['Utc']
-                if current_heartbeat != previous_heartbeat:
+                current_heartbeat = parser.parse(data['R']['Heartbeat']['Utc'])
+                if previous_heartbeat == None or current_heartbeat > previous_heartbeat:
                     stale_data_count = 0
                     previous_heartbeat = current_heartbeat
                     output_file.write(data + '\n')
