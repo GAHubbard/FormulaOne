@@ -24,7 +24,7 @@ def data_handler():
                 if previous_heartbeat == None or current_heartbeat > previous_heartbeat:
                     stale_data_count = 0
                     previous_heartbeat = current_heartbeat
-                    output_file.write(data + '\n')
+                    output_file.write(str(data) + '\n')
                 else:
                     stale_data_count += 1
                 stale_data = True if stale_data_count >= 100 else session.send_data(conn)
