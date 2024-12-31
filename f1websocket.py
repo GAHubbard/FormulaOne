@@ -19,7 +19,7 @@ class F1WebSocket:
         self.url = 'livetiming.formula1.com/signalr'
         self._cookie = None
         self._token = None
-        self._message_count = 1
+        self._message_count = 0
     
     @property
     def _headers(self):
@@ -79,7 +79,7 @@ class F1WebSocket:
         """
         return  websocket.create_connection(self._create_websocket(), header=self._headers)
 
-    def _increase_mesage_count(self):
+    def _increase_message_count(self):
         """
         Increases message count by 1
         """
@@ -89,7 +89,7 @@ class F1WebSocket:
         """
         Sends SignalR data over websocket connection
         """
-        self._increase_mesage_count()
+        self._increase_message_count()
         return ws.send(self._topics)
 
     def receive_data(self, ws: WebSocket) -> dict:
