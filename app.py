@@ -4,7 +4,6 @@ I don't know, I guess some stuff goes here
 
 from f1websocket import F1WebSocket
 from datetime import datetime
-import json
 from threading import Thread
 from contextlib import closing
 from dateutil import parser
