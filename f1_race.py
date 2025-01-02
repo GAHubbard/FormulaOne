@@ -14,6 +14,14 @@ from contextlib import closing          # Base
 from dateutil import parser             # pip install python-dateutil
 import json                             # Base
 
+latest_message: str = ""  # Global Latest Message Variable
+
+def get_latest_message() -> str:
+    """
+    Returns the latest message sent to data handler loop
+    :return: a string with the latest message
+    """
+    return latest_message
 
 class F1:
 
@@ -42,6 +50,8 @@ class F1:
         :return:
         """
 
+        global latest_message   # use the global variable
+
         # output file saved in YYYY-MM-DD HH-MM-SS.txt in append mode
         if self.output_to_file:
             output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a', encoding='utf-8')
@@ -60,6 +70,7 @@ class F1:
             while True:
 
                 data = json.loads(conn.recv())  # receive data back from the server and convert to a dictionary
+                latest_message = str(data)      # change the global variable for the latest message
 
                 if 'R' in data:  # If the message received from the server actually has race data in  it
 
