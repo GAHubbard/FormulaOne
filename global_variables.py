@@ -1,0 +1,7 @@
+def initialize():
+    global CURRENT_RACE_DATA 
+    CURRENT_RACE_DATA = None
+    global CURRENT_CAR_TELEMETRY
+    CURRENT_CAR_TELEMETRY = None
+    global CURRENT_CAR_POSITION
+    CURRENT_CAR_POSITION = None

@@ -37,7 +37,8 @@ class F1WebSocket:
                             "TimingStats", "TimingAppData",
                             "WeatherData", "TrackStatus", "DriverList",
                             "RaceControlMessages", "SessionInfo",
-                            "SessionData", "LapCount", "TimingData"]], "I": self._message_count})
+                            "SessionData", "LapCount", "TimingData", "TeamRadio", "PitLaneTimeCollection",
+                            "ChampionshipPrediction"]], "I": self._message_count})
 
     def _create_handshake(self) -> str:
         """
