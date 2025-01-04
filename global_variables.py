@@ -1,3 +1,4 @@
+
 def initialize():
     global CURRENT_RACE_DATA 
     CURRENT_RACE_DATA = None
@@ -5,3 +6,11 @@ def initialize():
     CURRENT_CAR_TELEMETRY = None
     global CURRENT_CAR_POSITION
     CURRENT_CAR_POSITION = None
+    global TIMING_DATA
+    TIMING_DATA = None
+    global WEATHER_DATA
+    WEATHER_DATA = None
+    global CURRENT_RACE_HEAERTBEAT
+    CURRENT_RACE_HEAERTBEAT = None
+    global CURRENT_TELEMETRY_HEARTBEAT
+    CURRENT_TELEMETRY_HEARTBEAT = None

@@ -15,11 +15,12 @@ import utils
 
 class F1WebSocket:
 
-    def __init__(self):
+    def __init__(self, feeds):
         self.netloc = 'livetiming.formula1.com/signalr'
         self._cookie = None
         self._token = None
         self._message_count = 0
+        self.feeds = feeds
     
     @property
     def _headers(self):
@@ -32,13 +33,7 @@ class F1WebSocket:
     @property
     def invoke_data(self):
         self._increase_message_count()
-        return json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
-                            "ExtrapolatedClock", "TopThree", "RcmSeries",
-                            "TimingStats", "TimingAppData",
-                            "WeatherData", "TrackStatus", "DriverList",
-                            "RaceControlMessages", "SessionInfo",
-                            "SessionData", "LapCount", "TimingData", "TeamRadio", "PitLaneTimeCollection",
-                            "ChampionshipPrediction"]], "I": self._message_count})
+        return json.dumps({"H": "Streaming", "M": "Subscribe", "A": [self.feeds], "I": self._message_count})
 
     def _create_handshake(self) -> str:
         """
