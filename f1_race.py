@@ -18,6 +18,22 @@ import base64
 import global_variables
 
 
+def get_car_telemetry_data(data: dict) -> dict:
+    """
+    Takes a message from F1's Live Timing and looks for their CarData.z value and converts it to JSON.
+    **NOTE** originally the data is zipped
+    :param data: message from F1's Live Timing in signalR format as a dictionary'
+    :return:
+    """
+    telemetry_data = {}  # blank telemetry data to return
+    if ['R'] in data:    # if there is an R key in the message
+        zipped_data = data['R']['CarData.z']  # get the CarData Key's Value
+        unzipped_data = zlib.decompress(base64.b64decode(zipped_data), -zlib.MAX_WBITS)  # unzip it
+        telemetry_as_string = unzipped_data.decode('utf-8-sig')  # convert it to a string in utf-8 (happens to be JSON)
+        telemetry_data: dict = json.loads(telemetry_as_string)   # convert to a dictionary
+
+    return telemetry_data  # Return the telemetry data
+
 class F1:
 
     def __init__(self):
@@ -83,13 +99,6 @@ class F1:
                 elif 'M' in data and len(data['M']) > 0:
                     pass
 
-
-    def get_car_telemetry_data(self, data):
-        if ['R'] in data:
-            heartbeat = data['R']['Heartbeat']['Utc']
-            zipped_data = data['R']['CarData.z']
-            unzipped_data = zlib.decompress(base64.b64decode(zipped_data), -zlib.MAX_WBITS)
-            unzipped_data.decode('utf-8-sig')
 
     def get_car_position_data(self):
         pass
