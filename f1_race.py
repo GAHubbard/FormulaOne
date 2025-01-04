@@ -13,15 +13,10 @@ from f1websocket import F1WebSocket
 from contextlib import closing          # Base
 from dateutil import parser             # pip install python-dateutil
 import json                             # Base
+import zlib
+import base64
+import global_variables
 
-latest_message: str = ""  # Global Latest Message Variable
-
-def get_latest_message() -> str:
-    """
-    Returns the latest message sent to data handler loop
-    :return: a string with the latest message
-    """
-    return latest_message
 
 class F1:
 
@@ -34,8 +29,7 @@ class F1:
         self.seconds = datetime.now().strftime('%S')
         self.netloc = 'livetiming.formula1.com'
         self.output_to_file = False
-        pass
-
+        
     def get_schedule(self) -> Response:
         schedule_scheme = 'https'
         schedule_netloc = self.netloc
@@ -49,9 +43,6 @@ class F1:
         Gets data from F1's Live Timing API endpoint and saves it to a file.
         :return:
         """
-
-        global latest_message   # use the global variable
-
         # output file saved in YYYY-MM-DD HH-MM-SS.txt in append mode
         if self.output_to_file:
             output_file = open(f'output-{datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.txt', 'a', encoding='utf-8')
@@ -68,7 +59,6 @@ class F1:
 
             # data handler loop
             while True:
-
                 data = json.loads(conn.recv())  # receive data back from the server and convert to a dictionary
                 latest_message = str(data)      # change the global variable for the latest message
 
@@ -80,19 +70,26 @@ class F1:
                     if previous_heartbeat is None or current_heartbeat > previous_heartbeat:
                         stale_data_count = 0                    # reset the stale data counter to 0
                         previous_heartbeat = current_heartbeat  # update the previous heartbeat datetime
+                        global_variables.CURRENT_RACE_DATA = data
                         if self.output_to_file:
                             output_file.write(str(data) + '\n')     # output the new data (not stale) to the file
                     else:
                         stale_data_count += 1                   # add the stale data counter up
-
                     # set the loop boolean to False if the stale data counter gets to 100 or ask the server for more data
                     if stale_data_count >= 100:
                         break
                     else:
                         conn.send(websocket.invoke_data)
+                elif 'M' in data and len(data['M']) > 0:
+                    pass
 
-    def get_car_telemetry_data(self):
-        pass
+
+    def get_car_telemetry_data(self, data):
+        if ['R'] in data:
+            heartbeat = data['R']['Heartbeat']['Utc']
+            zipped_data = data['R']['CarData.z']
+            unzipped_data = zlib.decompress(base64.b64decode(zipped_data), -zlib.MAX_WBITS)
+            unzipped_data.decode('utf-8-sig')
 
     def get_car_position_data(self):
         pass
