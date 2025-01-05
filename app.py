@@ -5,7 +5,7 @@ I don't know, I guess some stuff goes here
 
 from threading import Thread
 from data_gathering import session
-import global_variables
+import global_variables             # Custom package for dealing with global variables
 import time
 import utils
 import requests
@@ -17,7 +17,7 @@ def global_print():
         time.sleep(1)
 
 def main(race_path):
-    global_variables.initialize()
+    global_variables.reset_global_variables()
     feeds = get_jsonstreams(race_path)
     threads: list[Thread] = []
     thread_targets = [{'target': session, 'args': (feeds, True,)}]#,{'target': global_print, 'args': ()}

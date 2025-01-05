@@ -1,16 +1,32 @@
+"""
+Global Variables File
+Contains global variables along with functions related to them
+"""
+CURRENT_RACE_DATA = None
+CURRENT_CAR_TELEMETRY = None
+CURRENT_CAR_POSITION = None
+TIMING_DATA = None
+WEATHER_DATA = None
+CURRENT_RACE_HEARTBEAT = None
+CURRENT_TELEMETRY_HEARTBEAT = None
 
-def initialize():
-    global CURRENT_RACE_DATA 
-    CURRENT_RACE_DATA = None
+def reset_global_variables() -> None:
+    """
+    Resets the global variables to None
+    :return:
+    """
+    global CURRENT_RACE_DATA
     global CURRENT_CAR_TELEMETRY
-    CURRENT_CAR_TELEMETRY = None
     global CURRENT_CAR_POSITION
-    CURRENT_CAR_POSITION = None
     global TIMING_DATA
-    TIMING_DATA = None
     global WEATHER_DATA
-    WEATHER_DATA = None
-    global CURRENT_RACE_HEAERTBEAT
-    CURRENT_RACE_HEAERTBEAT = None
+    global CURRENT_RACE_HEARTBEAT
     global CURRENT_TELEMETRY_HEARTBEAT
+
+    CURRENT_RACE_DATA = None
+    CURRENT_CAR_TELEMETRY = None
+    CURRENT_CAR_POSITION = None
+    TIMING_DATA = None
+    WEATHER_DATA = None
+    CURRENT_RACE_HEARTBEAT = None
     CURRENT_TELEMETRY_HEARTBEAT = None
