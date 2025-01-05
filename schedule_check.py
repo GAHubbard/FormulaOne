@@ -3,9 +3,11 @@ import requests
 from requests import Response
 import datetime
 import json
+import app
+import time
         
 def get_schedule() -> dict:
-    year = '2024' #datetime.date.today().year
+    year = datetime.date.today().year
     schedule_scheme = 'https'
     schedule_netloc = 'livetiming.formula1.com'
     schedule_path = f'/static/{year}/Index.json'
@@ -16,18 +18,19 @@ def get_schedule() -> dict:
 
 def detect_race():
     schedule = get_schedule()
-    current_date = '2024-06-30' #datetime.now().strftime('%Y-%m-%d')
-    current_time = datetime.datetime.now().strftime('%H:%M:%S')
     meetings = schedule['Meetings']
-    for meeting in meetings:
-        sessions = meeting['Sessions']
-        for session in sessions:
-            if current_date in session['StartDate']:
-                print(session['Path'])
+    while True:
+        current_time = datetime.datetime.now(datetime.timezone.utc)
+        for meeting in meetings:
+            sessions = meeting['Sessions']
+            for session in sessions:
+                start_time = datetime.datetime.fromisoformat(session['StartDate']).replace(tzinfo=datetime.timezone.utc)
+                time_diff = start_time-current_time
+                if 0 < time_diff.total_seconds() < 900:
+                    race_path = session['Path']
+                    app.main(race_path)
+        time.sleep(600)
 
 
-
-#detect_race()
-start_time = datetime.datetime.fromisoformat('2024-06-30T15:00:00')
-current_time = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-print(start_time, current_time)
+if __name__ == "__main__":
+    detect_race()
