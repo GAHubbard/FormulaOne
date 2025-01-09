@@ -22,11 +22,19 @@ def global_print():
         time.sleep(1)
 
 
-def main(race_path):
-    global_variables.reset_global_variables()
-    feeds = get_jsonstreams(race_path)
+def main(session_path: str) -> None:
+    """
+    App begins running once a F1 session starts (really its about 15 minutes prior)
+    :param session_path: API endpoint for session
+    :return:
+    """
+
+    # grab various JSON streams for session
+    feeds = get_jsonstreams(session_path)
+
     threads: list[Thread] = []
-    thread_targets = [{'target': session, 'args': (feeds, True,)}]#,{'target': global_print, 'args': ()}
+
+    thread_targets = [{'target': session, 'args': (feeds, True,)}] #,{'target': global_print, 'args': ()}
 
     for thread_target in thread_targets:
         thread = Thread(target=thread_target['target'], args=thread_target['args'])
@@ -36,14 +44,23 @@ def main(race_path):
     for thread in threads:
         thread.join()
 
-def get_jsonstreams(race_path):
-    feeds = []
+def get_jsonstreams(session_path: str) -> list[str]:
+    """
+    Returns list of JSON streams based on the session path.
+    :param session_path: API endpoint for the session
+    :return: List of JSON streams for the current session
+    """
+
+    feeds = []  # JSON streams to return
     race_scheme = 'https'
     race_netloc = 'livetiming.formula1.com'
-    race_path = f'static/{race_path}Index.json'
-    race_url = utils.create_url(race_scheme, race_netloc, race_path)
+    full_path = f'static/{session_path}Index.json'  # insert session_path into url
+
+    race_url = utils.create_url(race_scheme, race_netloc, full_path)
     response = requests.get(race_url)
+
     stream_data = json.loads(response.content)
+
     for feed in stream_data['Feeds']:
         feeds.append(feed)
     return feeds
@@ -53,7 +70,7 @@ if __name__ == "__main__":
     """
     This section is intended to be run whenever the session finder finds a session.
     It then figures out the API endpoint paths for the session and starts the application with that path.
-    [This could probabaly be explained better in the future]
+    [This could probably be explained better in the future]
     """
-    race_path = '2024/2024-11-23_Las_Vegas_Grand_Prix/2024-11-23_Race/'     # race path for testing purposes
-    main(race_path)
+    session_path_test = '2024/2024-11-23_Las_Vegas_Grand_Prix/2024-11-23_Race/'     # race path for testing purposes
+    main(session_path_test)
