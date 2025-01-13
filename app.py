@@ -25,45 +25,59 @@ def global_print():
 def main(session_path: str) -> None:
     """
     App begins running once a F1 session starts (really its about 15 minutes prior)
+    This sets up some things and starts the apps threads
     :param session_path: API endpoint for session
     :return:
     """
 
     # grab various JSON streams for session
-    feeds = get_jsonstreams(session_path)
+    feeds: list[str] = get_jsonstreams(session_path)
 
+    # initialize the various Threads for each feed
     threads: list[Thread] = []
 
-    thread_targets = [{'target': session, 'args': (feeds, True,)}] #,{'target': global_print, 'args': ()}
+    # create the threads definitions (target and args)
+    # each key in this dictionary is a function meant to be a thread and its value is the arguments as a tuple
+    # the key also needs to be the object that represents the function not a string
+    thread_targets_and_args = {session: (feeds, True,),
+                               global_print: ()}
 
-    for thread_target in thread_targets:
-        thread = Thread(target=thread_target['target'], args=thread_target['args'])
-        threads.append(thread)
+    # loop through and start each thread
+    for key, value in thread_targets_and_args.items():
+        thread = Thread(target=key, args=value)
         thread.start()
+        threads.append(thread)
 
+    # join each thread back to the main thread when they finish
     for thread in threads:
         thread.join()
 
+
 def get_jsonstreams(session_path: str) -> list[str]:
     """
-    Returns list of JSON streams based on the session path.
+    Returns list of streams based on the session path.
     :param session_path: API endpoint for the session
-    :return: List of JSON streams for the current session
+    :return: List of streams for the current session
     """
 
-    feeds = []  # JSON streams to return
+    feeds: list[str] = []  # streams to return
     race_scheme = 'https'
     race_netloc = 'livetiming.formula1.com'
     full_path = f'static/{session_path}Index.json'  # insert session_path into url
 
+    # Create the URL using custom function
     race_url = utils.create_url(race_scheme, race_netloc, full_path)
+
+    # Get response that returns JSON API end points
     response = requests.get(race_url)
 
-    stream_data = json.loads(response.content)
+    stream_data: dict = json.loads(response.content)
 
+    # Loop through the streaming data feeds and find the .json paths
     for feed in stream_data['Feeds']:
         feeds.append(feed)
-    return feeds
+
+    return feeds  # return the list of .json paths such as []
 
 
 if __name__ == "__main__":
