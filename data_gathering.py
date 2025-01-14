@@ -44,7 +44,7 @@ def session(feeds: list[str], output_to_file: bool = False):
                 if previous_heartbeat is None or current_heartbeat > previous_heartbeat:
                     stale_data_count = 0                    # reset the stale data counter to 0
                     previous_heartbeat = current_heartbeat  # update the previous heartbeat datetime
-                    global_variables.CURRENT_RACE_DATA = data
+                    global_variables.TOP_THREE = data['R']['TopThree']
                     if output_to_file:
                         output_file.write(str(data) + '\n')     # output the new data (not stale) to the file
                 else:

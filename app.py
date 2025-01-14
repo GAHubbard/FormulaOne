@@ -18,7 +18,7 @@ def global_print():
     :return:
     """
     while True:
-        print(global_variables.CURRENT_RACE_DATA)
+        print(global_variables.TOP_THREE)
         time.sleep(1)
 
 

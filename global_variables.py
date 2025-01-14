@@ -3,38 +3,34 @@ Global Variables File
 Contains global variables along with functions related to them
 """
 
-# I (Matt) could not get the code to run without having these variables in the global scope of the package
-# We could also just not have the reset global variables function.  I didn't know if you (graham) intended on it
-# being called during the execution of the app to potentially reset the variables because a new racing session was
-# about to start
-CURRENT_RACE_DATA = None
-CURRENT_CAR_TELEMETRY = None
-CURRENT_CAR_POSITION = None
+SESSION_INFO = None
+ARCHIVE_STATUS = None
+TRACKING_STATUS = None
+SESSION_DATA = None
+CONTENT_STREAMS = None
+AUDIO_STREAMS = None
+EXTRAPOLATED_CLOCK = None
+CHAMPIONSHIP_PREDICTION = None
+CAR_DATA = None
+POSITION = None
+DRIVER_LIST = None
+TIMING_DATE_F1 = None
+LAP_SERIES = None
 TIMING_DATA = None
+TOP_THREE = None
+TIMING_APP_DATA = None
+TIMING_STATS = None
+DRIVER_RACE_INFO = None
+LAP_COUNT = None
+TYRE_STINT_SERIES = None
+SESSION_STATUS = None
+HEART_BEAT = None
 WEATHER_DATA = None
-CURRENT_RACE_HEARTBEAT = None
-CURRENT_TELEMETRY_HEARTBEAT = None
-
-def reset_global_variables() -> None:
-    """
-    Resets the global variables to None
-    :return:
-    """
-
-    # set these variables to global to ensure they refer to the global scoped variables
-    global CURRENT_RACE_DATA
-    global CURRENT_CAR_TELEMETRY
-    global CURRENT_CAR_POSITION
-    global TIMING_DATA
-    global WEATHER_DATA
-    global CURRENT_RACE_HEARTBEAT
-    global CURRENT_TELEMETRY_HEARTBEAT
-
-    # Reset the variables to empty
-    CURRENT_RACE_DATA = None
-    CURRENT_CAR_TELEMETRY = None
-    CURRENT_CAR_POSITION = None
-    TIMING_DATA = None
-    WEATHER_DATA = None
-    CURRENT_RACE_HEARTBEAT = None
-    CURRENT_TELEMETRY_HEARTBEAT = None
+WEATHER_DATA_SERIES = None
+TLARCM = None
+RACE_CONTROL_MESSAGES = None
+TEAM_RADIO = None
+CURRENT_TYRES = None
+OVERTAKE_SERIES = None
+PIT_LANE_TIME_COLLECTION = None
+PIT_STOP_SERIES = None
