@@ -5,17 +5,23 @@ Date: 2024-12-30
 """
 
 
-from datetime import datetime
-from f1websocket import F1WebSocket
-from contextlib import closing          # Base
+from datetime import datetime           # base python
+from f1websocket import F1WebSocket     # custom file
+from contextlib import closing          # base python
 from dateutil import parser             # pip install python-dateutil
-import json                             # Base
-import global_variables
+import json                             # base python
+import global_variables                 # custom file
 
 
 def session(feeds: list[str], output_to_file: bool = False):
     """
     Gets data from F1's Live Timing API endpoint and saves it to a file.
+    and updates a global variable. A lot of what is going on here right now is for testing but this will
+    be getting the data in the final product.
+    :param feeds: list of feeds names to get data from these are the arguments we pass to the server function named
+    Subscribe.  This function then returns us messages giving us data for every argument we pass.
+    Logically these are the list of feeds we want data on.
+    :param output_to_file: If true, save the data to file, if false, then don't.
     :return:
     """
     # output file saved in YYYY-MM-DD HH-MM-SS.txt in append mode
@@ -44,7 +50,7 @@ def session(feeds: list[str], output_to_file: bool = False):
                 if previous_heartbeat is None or current_heartbeat > previous_heartbeat:
                     stale_data_count = 0                    # reset the stale data counter to 0
                     previous_heartbeat = current_heartbeat  # update the previous heartbeat datetime
-                    global_variables.TOP_THREE = data['R']['TopThree']
+                    global_variables.TOP_THREE = data['R']['TopThree'] # UPDATE THE GLOBAL VARIABLE WITH THE TOP 3 DATA
                     if output_to_file:
                         output_file.write(str(data) + '\n')     # output the new data (not stale) to the file
                 else:
