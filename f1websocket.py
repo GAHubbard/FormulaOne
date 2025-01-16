@@ -5,21 +5,22 @@ Date: 2024-12-28
 """
 
 
-import websocket
-from websocket import WebSocket
-import requests
-from requests import Response
-import json
-import utils
+import websocket                # pip install websocket-client
+from websocket import WebSocket # specific import from websocket
+import requests                 # pip install requests
+from requests import Response   # specific import from requests
+import json                     # base python
+import utils                    # custom python file
 
 
 class F1WebSocket:
 
-    def __init__(self):
+    def __init__(self, feeds):
         self.netloc = 'livetiming.formula1.com/signalr'
         self._cookie = None
         self._token = None
         self._message_count = 0
+        self.feeds = feeds
     
     @property
     def _headers(self):
@@ -31,14 +32,18 @@ class F1WebSocket:
 
     @property
     def invoke_data(self):
-        self._increase_message_count()
-        return json.dumps({"H": "Streaming", "M": "Subscribe", "A": [["Heartbeat", "CarData.z", "Position.z",
-                            "ExtrapolatedClock", "TopThree", "RcmSeries",
-                            "TimingStats", "TimingAppData",
-                            "WeatherData", "TrackStatus", "DriverList",
-                            "RaceControlMessages", "SessionInfo",
-                            "SessionData", "LapCount", "TimingData", "TeamRadio", "PitLaneTimeCollection",
-                            "ChampionshipPrediction"]], "I": self._message_count})
+        """
+        requests more data from the websocket connection by sending a signalR message in the format below.
+        increments the message count component of the signalR message we send the server.
+        H: hub name
+        M: function we want to invoke on the server side - only known function is the Subscribe function
+        A: list of arguments for the function - these happen to be what feeds you want to subscribe to
+        I: message ID.  Usually you increment this with every new request sent to server.  The purpose of this
+        is to help the client know what specific server message is attached to a specific client message.
+        :return:
+        """
+        self._increase_message_count()  # increment the message count
+        return json.dumps({"H": "Streaming", "M": "Subscribe", "A": [self.feeds], "I": self._message_count})
 
     def _create_handshake(self) -> str:
         """
