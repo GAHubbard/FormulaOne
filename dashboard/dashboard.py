@@ -1,10 +1,18 @@
 import reflex as rx
 
-from dashboard.pages.navbar import navbar
+from dashboard.pages import navbar
 
 def index() -> rx.Component:
     return rx.vstack(
-        navbar(),
+        navbar.top_navbar(),
+        rx.spacer(),
+        rx.hstack(
+            navbar.left_navbar(),
+            width="100%",
+            spacing="6",
+            padding_x=["1.5em", "1.5em", "3em", "5em"],
+            padding_y=["1.25em", "1.25em", "2em"],
+        ),
         width="100%",
         spacing="6",
         padding_x=["1.5em", "1.5em", "3em", "5em"],
