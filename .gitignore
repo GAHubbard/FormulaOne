@@ -1,3 +1,8 @@
+*.db
+.states
+.web
+*.py[cod]
+assets/external/
 # Ignore Python cache files
 __pycache__/
 *.pyc
