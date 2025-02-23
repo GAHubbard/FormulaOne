@@ -1,19 +1,18 @@
 import reflex as rx
-from dashboard.component import navbar
+from dashboard.component.navbar import left_navbar, top_navbar
+from dashboard.component.race_screen import race_screen
 
 
 def index() -> rx.Component:
     return rx.hstack(
-        navbar.left_navbar(),
-        rx.hstack(
-            navbar.top_navbar(),
+        left_navbar(),
+        rx.vstack(
+            top_navbar(),
+            race_screen(),
             width="100%",
-            spacing="6",
-            padding_x=["1.5em", "1.5em", "3em", "5em"],
-            padding_y=["1.25em", "1.25em", "2em"],
+            align="center"
         ),
         width="100%",
-        spacing="6",
-        padding_x=["1.5em", "1.5em", "3em", "5em"],
-        padding_y=["1.25em", "1.25em", "2em"],
+        padding_x="1em",
+        padding_y="1em",
     )
