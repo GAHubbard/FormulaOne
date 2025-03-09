@@ -34,3 +34,5 @@ CURRENT_TYRES = None
 OVERTAKE_SERIES = None
 PIT_LANE_TIME_COLLECTION = None
 PIT_STOP_SERIES = None
+
+top_three_test = ""

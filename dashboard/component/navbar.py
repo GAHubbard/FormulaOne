@@ -1,5 +1,6 @@
 import reflex as rx
 from ..component.card import driver_card
+from ..application import global_variables as gv
 
 
 def top_navbar():
@@ -11,7 +12,7 @@ def top_navbar():
                 align="center",
                 spacing="3",
                 ),
-            "Some general info goes here",
+            "hello world",
             padding="1em",
             border_width="1px",
             width="100% " 

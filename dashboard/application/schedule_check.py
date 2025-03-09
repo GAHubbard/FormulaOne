@@ -1,9 +1,8 @@
 import utils
 import requests
-from requests import Response
 import datetime
 import json
-import app
+from FormulaOne.assets.application import app
 import time
         
 def get_schedule() -> dict:

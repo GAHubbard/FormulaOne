@@ -19,6 +19,15 @@ def global_print():
     """
     while True:
         print(global_variables.TOP_THREE)
+        if global_variables.TOP_THREE is not None and 'Lines' in global_variables.TOP_THREE:
+            order = 1
+            while order < 4:
+                print(global_variables.TOP_THREE['Lines'][order-1]['BroadcastName'])
+
+                time.sleep(10)
+                order += 1
+
+
         time.sleep(1)
 
 
