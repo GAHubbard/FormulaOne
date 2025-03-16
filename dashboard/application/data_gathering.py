@@ -57,12 +57,20 @@ def session(feeds: list[str], output_to_file: bool = False):
                     stale_data_count += 1                   # add the stale data counter up
                 # set the loop boolean to False if the stale data counter gets to 100 or ask the server for more data
                 if stale_data_count >= 100:
-                    break
+                    pass
+                    #break
                 else:
                     conn.send(websocket.invoke_data)
             elif 'M' in data and len(data['M']) > 0:
-                 if output_to_file:
+                if output_to_file:
                     output_file.write(str(data) + '\n')
-                    data_type = data['M'][0]['A'][0]
-                    data_string = data['M'][0]['A'][1]
-                    time_stamp = parser.parse(data['M'][0]['A'][2])
+                for feed in data['M']:
+                     feed_name = feed['A'][0]
+                     feed_data = feed['A'][1]
+                     feed_timestamp = feed['A'][2]
+                     pass_data_to_global_variable(feed_name, feed_data, feed_timestamp)
+                     if feed_name == 'SessionStatus' and feed_data['Status'] == 'Finalised' or 'Ends':
+                         break
+
+def pass_data_to_global_variable(feed: str, data: str, timestamp: str):
+    pass
