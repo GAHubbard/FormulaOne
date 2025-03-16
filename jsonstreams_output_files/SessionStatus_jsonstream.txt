@@ -1,0 +1,5 @@
+00:00:06.890{"Status":"Inactive"}
+01:11:00.355{"Status":"Started"}
+02:53:06.869{"Status":"Finished"}
+02:57:12.748{"Status":"Finalised"}
+02:57:12.748{"Status":"Ends"}

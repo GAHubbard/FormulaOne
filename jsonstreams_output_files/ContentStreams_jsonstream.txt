@@ -1,0 +1,2 @@
+00:00:24.491{"Streams":[{"Type":"Commentary","Name":"monterosa","Language":"en","Uri":"https://interactioncloud.formula1.com/?h=cdn.monterosa.cloud&p=222568ff-a8d4-4e3a-b9e2-63e185e2d964&e=724944f4-69d6-4fa4-a18e-c9a762866ec7","Utc":"0001-01-01T00:00:00"}]}
+00:00:24.491{"Streams":{"1":{"Type":"Audio","Name":"Live coverage (EN)","Language":"en","Uri":"https://dtksvu0irgynk.cloudfront.net/out/v1/7ed89990eb2a4d39870ff19793519937/index.m3u8","Path":"Live_coverage_(EN)-en/stream.m3u8","Utc":"2025-03-16T03:07:47.109Z"}}}
