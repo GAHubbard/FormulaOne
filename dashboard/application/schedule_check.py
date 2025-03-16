@@ -2,7 +2,7 @@ import utils
 import requests
 import datetime
 import json
-from FormulaOne.assets.application import app
+import app
 import time
         
 def get_schedule() -> dict:
@@ -23,8 +23,12 @@ def detect_race():
         for meeting in meetings:
             sessions = meeting['Sessions']
             for session in sessions:
-                start_time = datetime.datetime.fromisoformat(session['StartDate']).replace(tzinfo=datetime.timezone.utc)
-                time_diff = start_time-current_time
+                gmt_offset = session['GmtOffset'].split(':')
+                start_time_local = datetime.datetime.fromisoformat(session['StartDate'])
+                start_time_utc = start_time_local-datetime.timedelta(hours=int(gmt_offset[0]), minutes=int(gmt_offset[1]), seconds=int(gmt_offset[2]))
+                start_time_utc = start_time_utc.replace(tzinfo=datetime.timezone.utc)
+                time_diff = current_time-start_time_utc
+                print(time_diff)
                 if 0 < time_diff.total_seconds() < 900:
                     race_path = session['Path']
                     app.main(race_path)
