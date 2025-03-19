@@ -15,12 +15,16 @@ import utils                    # custom python file
 
 class F1WebSocket:
 
-    def __init__(self, feeds):
+    def __init__(self, feeds: list[str] | None):
         self.netloc = 'livetiming.formula1.com/signalr'
         self._cookie = None
         self._token = None
         self._message_count = 0
-        self.feeds = feeds
+        self.feeds = feeds if feeds is not None else ['SessionInfo', 'ArchiveStatus', 'TrackStatus', 'SessionData', 'ContentStreams', 'ChampionshipPrediction', 'AudioStreams', 
+                                                      'ExtrapolatedClock', 'TimingStats', 'DriverList', 'TimingDataF1', 'TopThree', 'TimingData', 'DriverTracker', 'LapSeries', 
+                                                      'TimingAppData', 'TyreStintSeries', 'DriverRaceInfo', 'LapCount', 'SessionStatus', 'WeatherData', 'WeatherDataSeries', 
+                                                      'Heartbeat', 'Position.z', 'CarData.z', 'TlaRcm', 'RaceControlMessages', 'TeamRadio', 'CurrentTyres', 'OvertakeSeries', 
+                                                      'PitLaneTimeCollection', 'PitStop', 'PitStopSeries']
     
     @property
     def _headers(self):

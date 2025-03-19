@@ -40,7 +40,7 @@ def main(session_path: str) -> None:
     """
 
     # grab various JSON streams for session
-    feeds: list[str] = get_jsonstreams(session_path)
+    feeds: list[str] | None = get_jsonstreams(session_path)
 
     # initialize the various Threads for each feed
     threads: list[Thread] = []
@@ -62,7 +62,7 @@ def main(session_path: str) -> None:
         thread.join()
 
 
-def get_jsonstreams(session_path: str) -> list[str]:
+def get_jsonstreams(session_path: str) -> list[str] | None:
     """
     Returns list of streams based on the session path.
     :param session_path: API endpoint for the session
@@ -79,13 +79,15 @@ def get_jsonstreams(session_path: str) -> list[str]:
 
     # Get response that returns JSON API end points
     response = requests.get(race_url)
+    if response.status_code == 200:
+        stream_data: dict = json.loads(response.content)
 
-    stream_data: dict = json.loads(response.content)
-
-    # Loop through the streaming data feeds and find the .json paths
-    for feed in stream_data['Feeds']:
-        feeds.append(feed)
-
+        # Loop through the streaming data feeds and find the .json paths
+        for feed in stream_data['Feeds']:
+            feeds.append(feed)
+    else:
+        feeds = None
+    
     return feeds  # return the list of .json paths such as []
 
 
