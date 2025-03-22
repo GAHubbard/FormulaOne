@@ -11,6 +11,7 @@ from contextlib import closing          # base python
 from dateutil import parser             # pip install python-dateutil
 import json                             # base python
 import global_variables                 # custom file
+import time
 
 
 def session(feeds: list[str] | None, output_to_file: bool = False):
@@ -32,29 +33,20 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
     websocket = F1WebSocket(feeds)  # create custom web socket
 
     # Ensure websocket closes in case of errors
+    start_time = time.time()
     with closing(websocket.connection()) as conn:
 
         conn.send(websocket.invoke_data)     # Send message to SignalR endpoint to request specific data
 
         previous_heartbeat = None       # Previous Heartbeat timestamp
         session_status = True
+        
         # data handler loop
         while session_status:
             data = json.loads(conn.recv())  # receive data back from the server and convert to a dictionary
-            raw_output_file.write(str(data) + '\n')
-            if 'R' in data:  # If the message received from the server actually has race data in  it
-
-                current_heartbeat = parser.parse(data['R']['Heartbeat']['Utc'])  # Convert heartbeat to datetime obj
-
-                # if previous heartbeat datetime has not been set or earlier in time to the current heart beat
-                if previous_heartbeat is None or current_heartbeat > previous_heartbeat:
-                    previous_heartbeat = current_heartbeat  # update the previous heartbeat datetime
-                    global_variables.TOP_THREE = data['R']['TopThree'] # UPDATE THE GLOBAL VARIABLE WITH THE TOP 3 DATA
-                    if output_to_file:
-                        output_file.write(str(data) + '\n')     # output the new data (not stale) to the file
-                else:
-                    conn.send(websocket.invoke_data)
-            elif 'M' in data and len(data['M']) > 0:
+            time_split = time.time() - start_time
+            raw_output_file.write(str({time_split: data}) + '\n')
+            if 'M' in data and len(data['M']) > 0:
                 if output_to_file:
                     output_file.write(str(data) + '\n')
                 for feed in data['M']:
@@ -68,5 +60,5 @@ def pass_data_to_global_variable(feed: str, data: str, timestamp: str):
     pass
 
 def is_end_of_session(feed: str, data: str) -> bool:
-    return False if feed == 'SessionStatus' and data['Status'] == 'Finalised' or 'Ends' else True
+    return False if (feed == 'SessionStatus' )and ('Status' in data) and (data['Status'] == 'Finalised' or 'Ends') else True
     

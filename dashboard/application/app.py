@@ -48,8 +48,7 @@ def main(session_path: str) -> None:
     # create the threads definitions (target and args)
     # each key in this dictionary is a function meant to be a thread and its value is the arguments as a tuple
     # the key also needs to be the object that represents the function not a string
-    thread_targets_and_args = {session: (feeds, True,),
-                               global_print: ()}
+    thread_targets_and_args = {session: (feeds, True,)}
 
     # loop through and start each thread
     for key, value in thread_targets_and_args.items():
@@ -97,5 +96,5 @@ if __name__ == "__main__":
     It then figures out the API endpoint paths for the session and starts the application with that path.
     [This could probably be explained better in the future]
     """
-    session_path_test = '2024/2024-11-23_Las_Vegas_Grand_Prix/2024-11-23_Race/'     # race path for testing purposes
+    session_path_test = '2025/2025-03-23_Chinese_Grand_Prix/2025-03-21_Sprint_Qualifying/'     # race path for testing purposes
     main(session_path_test)
