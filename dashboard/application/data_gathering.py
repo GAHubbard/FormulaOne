@@ -37,28 +37,23 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
     with closing(websocket.connection()) as conn:
 
         conn.send(websocket.invoke_data)     # Send message to SignalR endpoint to request specific data
-
-        previous_heartbeat = None       # Previous Heartbeat timestamp
         session_status = True
         
         # data handler loop
         while session_status:
             data = json.loads(conn.recv())  # receive data back from the server and convert to a dictionary
-            time_split = time.time() - start_time
-            raw_output_file.write(str({time_split: data}) + '\n')
-            if 'M' in data and len(data['M']) > 0:
-                if output_to_file:
-                    output_file.write(str(data) + '\n')
+            if 'M' in data:
                 for feed in data['M']:
                     feed_name = feed['A'][0]
                     feed_data = feed['A'][1]
                     feed_timestamp = feed['A'][2]
                     pass_data_to_global_variable(feed_name, feed_data, feed_timestamp)
-                    session_status = is_end_of_session(feed_name, feed_data)
+                    session_status = False if (feed == 'SessionStatus') and ('Status' in data) and (data['Status'] in ['Finalised', 'Ends']) else True
+                if output_to_file:
+                        output_file.write(str(data) + '\n')
+            time_split = time.time() - start_time
+            raw_output_file.write(str({time_split: data}) + '\n')
 
 def pass_data_to_global_variable(feed: str, data: str, timestamp: str):
-    pass
-
-def is_end_of_session(feed: str, data: str) -> bool:
-    return False if (feed == 'SessionStatus' )and ('Status' in data) and (data['Status'] == 'Finalised' or 'Ends') else True
     
+    pass
