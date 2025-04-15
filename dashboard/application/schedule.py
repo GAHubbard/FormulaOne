@@ -4,6 +4,7 @@ File contains functions related to the schedule
 
 """
 import datetime
+from ast import iter_child_nodes
 
 import json_explore
 import requests
@@ -34,6 +35,7 @@ def get_upcoming_or_current_meeting_slash_race_as_dict() -> dict:
     all_meetings_so_far_including_current: list[dict] = get_all_meetings_slash_races()
 
     return all_meetings_so_far_including_current[-1]  # gets the last Meeting/Race
+
 
 def get_all_meetings_slash_races() -> list[dict]:
     """
@@ -114,19 +116,106 @@ def is_current_or_upcoming_week_sprint() -> bool:
         return False
 
 
-def has_f1_posted_the_upcoming_schedule_info() -> (bool, str):
+def has_f1_posted_the_upcoming_schedule_info() -> bool:
     """
     Returns whether or not f1 has posting the upcoming schedule
+    Returns true during race weekend even if the next week hasn't been posted yet
 
-    ** ALL TIMES ARE IN ZULU **
+    Also for timing in this function we assume GMT and UTC are the same.
+    F1 uses GMT time at least in name, but I have a suspicious feeling they really mean UTC but just say GMT
+    Either way they are different by less than a second so it shouldn't matter
 
-    Truth Table
+    ** ALL TIMES ARE IN UTC Time **
+
+    !! TODO !! WE NEED TO CHECK IF F1 IS PLANNING RACES AROUND THE LOCAL TIME RATHER THAN UTC
+    !! TODO !! AS IN DOES F1 HAVE FRI SAT SUN RACES PURELY ON LOCAL TIME AND USING UTC MESSES UP THAT PATTERN
+
+
+    Truth Table Example
+    Example Race Weekend:
+    F1 Activity -> Day of the week          -> is 3 FEB race posted -> function returns
+    Nothing     -> Monday (All GMT/UTC Time)-> no                   -> False
+    Nothing     -> Tuesday                  -> no                   -> False
+    Nothing     -> Wednesday                -> yes                  -> True
+    Nothing     -> Thursday                 -> yes                  -> True
+    P1 and P2   -> Friday    1 FEB          -> yes                  -> True
+    P3 and Qual -> Saturday  2 FEB          -> yes                  -> True
+    Race        -> Sunday    3 FEB          -> yes                  -> True
+
+    ** THIS FUNCTION ASSUMES THAT F1 WILL ALWAYS POST AT LEAST BY THURSDAY THE RACE SCHEDULE **
 
     Once...
 
     :return:
     """
+
+    # get the utc time
+    utc_time = datetime.datetime.now(datetime.timezone.utc)
+
+    # get the current date in utc time
+    utc_current_date = utc_time.date()
+
     pass
+
+
+def get_beginning_utc_date_of_weekend() -> datetime.date:
+    """
+    Returns the beginning date of the weekend of the current week
+    based on the time of the first session it returns the utc date
+
+    Doesn't care if the f1 data is showing the upcoming current or past weekend.
+
+    ** THIS JUST RETURNS THE LATEST MEETING DATA **
+
+    ** F1 POSTS THE LOCAL SESSION START TIMES AND LOCAL SESSION END TIMES **
+    ** THEY GIVE THE GMT OFFSET SO YOU KNOW THE TIMEZONE **
+
+    - Postive GMT offsets look like GmtOffset: 03:00:00
+
+    !! TODO !! how does f1 post times with negative gmt offsets
+
+    :return: utc date of first session of the last meeting data from the API
+    """
+
+    # get latest posted meeting dict
+    latest_posted_meeting: dict = get_upcoming_or_current_meeting_slash_race_as_dict()
+
+    # get the first session
+    first_session: dict = latest_posted_meeting['Sessions'][0]
+
+    # get the start time and gmt offset
+    start_time_first_session_str: str = first_session['StartDate']
+    gmt_offset_str: str = first_session['GmtOffset']
+
+    # convert the gmt offset to a timedelta
+    time_delta_from_gmt_offset: datetime.timedelta = convert_gmt_offset_str_to_time_delta(gmt_offset_str)
+
+    # convert the session time to a datetime
+    start_time_first_session = datetime.datetime.strptime(start_time_first_session_str, "%Y-%m-%dT%H:%M:%S")
+
+    # convert to utc time by subtracting the gmt offset
+    utc_start_time_first_session = start_time_first_session - time_delta_from_gmt_offset
+
+    # convert utc time to utc date
+    return utc_start_time_first_session.date()
+
+
+def convert_gmt_offset_str_to_time_delta(gmt_offset_str: str) -> datetime.timedelta:
+    """
+    Takes an F1 GMT offset string and converts it to a time delta
+    :param gmt_offset_str: returned from F1 API
+
+    Example:
+    GmtOffset: 03:00:00 ->
+
+    :return: A timedelta object representing the time delta of a gmt offset string
+    """
+
+    offset_int = int(gmt_offset_str[:2])
+
+    offset_timedelta = datetime.timedelta(hours=offset_int)
+
+    return offset_timedelta
 
 
 if __name__ == "__main__":
@@ -141,4 +230,6 @@ if __name__ == "__main__":
     print(f"Next Race: {get_next_or_upcoming_location()}")
 
     print(f"Is the current week or upcoming week a sprint weekend?: {'Yes' if is_current_or_upcoming_week_sprint() else 'No'}")
+
+    print(f"Start Date in UTC of first session: {get_beginning_utc_date_of_weekend()}")
 
