@@ -4,7 +4,7 @@ File contains functions related to the schedule
 
 """
 import datetime
-from ast import iter_child_nodes
+import urllib.parse
 
 import json_explore
 import requests
@@ -218,6 +218,20 @@ def convert_gmt_offset_str_to_time_delta(gmt_offset_str: str) -> datetime.timede
     return offset_timedelta
 
 
+def new_way_to_get_schedule_data():
+
+    headers = {
+        'locale': 'en',
+        'apikey': 't3DrvCuXvjDX8nIvPpcSNTbB9kae1DPs'
+    }
+
+    url = "https://api.formula1.com/v1/editorial-eventlisting/events"
+
+    response = requests.get(url, headers=headers)
+
+    json_explore.json_explore_json(response.json())
+
+
 if __name__ == "__main__":
     """
     Test code for this module
@@ -232,4 +246,6 @@ if __name__ == "__main__":
     print(f"Is the current week or upcoming week a sprint weekend?: {'Yes' if is_current_or_upcoming_week_sprint() else 'No'}")
 
     print(f"Start Date in UTC of first session: {get_beginning_utc_date_of_weekend()}")
+
+    print(f"testing new schedule end point: {new_way_to_get_schedule_data()}")
 
