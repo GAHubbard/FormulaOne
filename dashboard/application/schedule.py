@@ -10,7 +10,6 @@ import json_explore
 import requests
 import json
 
-
 def get_upcoming_or_current_meeting_slash_race_as_dict() -> dict:
     """
     Returns the dictionary corresponding to the !! current or upcoming race. !!
@@ -230,6 +229,10 @@ def new_way_to_get_schedule_data():
     response = requests.get(url, headers=headers)
 
     json_explore.json_explore_json(response.json())
+
+    with open('schedule_return_real.json', 'w') as outfile:
+        json_ob = json.dumps(response.json())
+        outfile.write(json_ob)
 
 
 if __name__ == "__main__":
