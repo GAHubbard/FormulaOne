@@ -102,9 +102,27 @@ def get_end_time_of_event_or_meeting_in_utc(event_or_meeting: dict) -> datetime.
 
     gmt_offset_as_timedelta = convert_f1_gmt_offset_string_to_time_delta(gmt_offset_as_string)
 
-    end_time_utc = local_end_time + gmt_offset_as_timedelta
+    end_time_utc = local_end_time - gmt_offset_as_timedelta
 
     return end_time_utc
+
+def get_start_time_of_event_or_meeting_in_utc(event_or_meeting: dict) -> datetime.datetime:
+    """
+    Return the scheduled start time of session 1 or practice 1 of an event / meeting
+
+    :param event_or_meeting: dictionary that returns from one element of get_list_of_event_dictionaries()
+    :return: a datetime object for the scheduled start time
+    """
+
+    local_start_time = datetime.datetime.fromisoformat(event_or_meeting['meetingStartDate'])
+
+    gmt_offset_as_string = event_or_meeting['gmtOffset']
+
+    gmt_offset_as_timedelta = convert_f1_gmt_offset_string_to_time_delta(gmt_offset_as_string)
+
+    start_time_utc = local_start_time - gmt_offset_as_timedelta
+
+    return start_time_utc
 
 def convert_f1_gmt_offset_string_to_time_delta(gmt_offset_string: str) -> datetime.timedelta:
     """
@@ -129,15 +147,19 @@ def convert_f1_gmt_offset_string_to_time_delta(gmt_offset_string: str) -> dateti
         return datetime.timedelta(hours=-int(hours_delta))
 
 
-def get_first_session_start_of_upcoming_or_current_meeting_as_string() -> str:
+def get_first_session_start_of_upcoming_or_current_meeting_in_utc() -> datetime.datetime:
     """
-    Returns the first session start datetime of the upcoming or current meeting AS A STRING
-    :return: a string in isoformat
+    Returns the first session start datetime of the upcoming or current meeting as a datetime object
+
+    ** RETURNS IN UTC **
+    :return: a datetime for the utc start time in utc
     """
 
     current_or_upcoming_meeting = get_next_or_current_meeting_info()
 
-    return current_or_upcoming_meeting['meetingStartDate']
+    return get_start_time_of_event_or_meeting_in_utc(current_or_upcoming_meeting)
+
+
 
 if __name__ == "__main__":
     print(season_api_is_showing())
@@ -146,4 +168,4 @@ if __name__ == "__main__":
 
     print(get_next_or_current_meeting_info())
 
-    print(get_first_session_start_of_upcoming_or_current_meeting_as_string())
+    print(get_first_session_start_of_upcoming_or_current_meeting_in_utc())
