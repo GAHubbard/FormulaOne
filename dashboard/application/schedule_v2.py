@@ -238,7 +238,7 @@ def get_upcoming_session() -> dict:
     else:
         for index, session in enumerate(session_list):
             if get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session) < current_time_in_utc <= get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session_list[index + 1]):
-                return sessions_info[index + 1]
+                return session_list[index + 1]
 
 
 def get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(specific_session_in_timetables_list: dict) -> datetime.datetime:
