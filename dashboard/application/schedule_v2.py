@@ -22,11 +22,14 @@ api_key = os.environ.get('F1APIKEY')
 
 # Set the headers to have the API Key
 headers = {
-    'apikey': api_key
+    'apikey': api_key,
+    'locale': 'en'
 }
 
 # API URL
-api_url = "https://api.formula1.com/v1/editorial-eventlisting/events"
+meeting_api_url = "https://api.formula1.com/v1/editorial-eventlisting/events"
+
+session_api_url_needs_meeting = "https://api.formula1.com/v1/event-tracker/meeting"
 
 
 def season_api_is_showing() -> int:
@@ -37,7 +40,7 @@ def season_api_is_showing() -> int:
 
     url = "https://api.formula1.com/v1/editorial-eventlisting/events"
 
-    response = requests.get(api_url, headers=headers)
+    response = requests.get(meeting_api_url, headers=headers)
 
     return int(response.json()['year'])
 
@@ -48,7 +51,7 @@ def get_list_of_event_dictionaries() -> list[dict]:
     :return:
     """
 
-    response = requests.get(api_url, headers=headers)
+    response = requests.get(meeting_api_url, headers=headers)
 
     return response.json()['events']
 
@@ -60,6 +63,8 @@ def get_next_or_current_meeting_info() -> dict or None:
     ** Will return the next meeting info the day after a race (all in utc) **
 
     ** Will return None if there is no next meeting because the season is over **
+
+    ** this function is kinda overkill because the meetings are in order already by time in the dictionary **
 
     :return: dict for event or None if there are no next meetings
     """
@@ -175,7 +180,133 @@ def get_name_of_event_or_meeting(meeting: dict) -> str:
 
     return meeting['meetingName']
 
+def get_session_json_from_a_meeting_key(meeting_key: str) -> dict:
+    """
+    Returns a dictionary for a specific session based on a meeting key found in the events url api
+    :param meeting_key: example is 1258 for Saudi Arabia 2025
+    :return:
+    """
 
+    response = requests.get(f"{session_api_url_needs_meeting}/{meeting_key}", headers=headers)
+
+    return response.json()
+
+def get_the_upcoming_or_current_sessions_for_a_meeting() -> dict:
+    """
+    Returns a dictionary for the sessions for the upcoming or current meeting
+    :return:
+    """
+
+    meeting_key: str = get_next_or_current_meeting_info()['meetingKey']
+
+    return get_session_json_from_a_meeting_key(meeting_key)
+
+def get_session_list(session_dict: dict) -> list[dict]:
+    """
+    Returns sessions for a meeting when given the session_dictionary return from the session api
+
+    :param session_dict: is a session return using a meetingKey or the upcoming current sessions
+    :return:
+    """
+
+    return session_dict['seasonContext']['timetables']
+
+def get_upcoming_session() -> dict:
+    """
+    Returns a dictionary with information on the upcoming session
+
+    ** because session list is in order for a given session dictionary this doesn't need to sort by time **
+
+    ** if a session is in progress this will not return that session MAYBE I SHOULD FIX THIS **
+
+    ** UNSURE WHAT HAPPENS AT END OF MEEETING OR END OF SESSION **
+
+    :return:
+    """
+
+    # get the sessions dictionary for the current or upcoming meeting
+    sessions_info = get_the_upcoming_or_current_sessions_for_a_meeting()
+
+    # get the session list for that meeting
+    session_list = get_session_list(sessions_info)
+
+    # get the current time in utc
+    current_time_in_utc: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)
+
+    if current_time_in_utc < get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session_list[0]):
+        return session_list[0]
+    else:
+        for index, session in enumerate(session_list):
+            if get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session) < current_time_in_utc <= get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session_list[index + 1]):
+                return sessions_info[index + 1]
+
+
+def get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(specific_session_in_timetables_list: dict) -> datetime.datetime:
+    """
+    Returns a datetime object for the session start time in utc from a timetables list
+
+    argument for this function: using the session api return -> seasonContext -> timetables -> any element
+
+    :param specific_session_in_timetables_list: session_dictionary_from_session_api['seasonContext']['timetables'][0-n]
+    :return: a utc datetime object for the session start time in utc
+    """
+
+    # get the local start time
+    start_time_local_time = datetime.datetime.strptime(specific_session_in_timetables_list['startTime'], '%Y-%m-%dT%H:%M:%S')
+
+    # get the gmt offset as a string
+    gmt_offset_as_string = specific_session_in_timetables_list['gmtOffset']
+
+    # convert that to a time delta
+    gmt_offset_as_time_delta = convert_f1_gmt_offset_string_to_time_delta(gmt_offset_as_string)
+
+    # apply the timedelta to the local time
+    start_time_utc = start_time_local_time - gmt_offset_as_time_delta
+
+    # FORCE START_TIME_UTC TO BE TIMEZONE AWARE OR A BUG HAPPENS IN COMPARISON OF DATETIMES
+    start_time_utc = start_time_utc.replace(tzinfo=datetime.timezone.utc)
+
+    return start_time_utc
+
+def next_session_info_print(user_time: bool = False) -> None:
+    """
+    Prints out the next session info
+
+    :param user_time: if False then utc time, if True then user time
+    :return:
+    """
+
+    upcoming_or_current_meeting = get_next_or_current_meeting_info()
+    name_of_meeting = get_name_of_event_or_meeting(upcoming_or_current_meeting)
+
+    upcoming_session_timetable = get_upcoming_session()
+
+    upcoming_session_start_time = get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(upcoming_session_timetable)
+
+    name_of_upcoming_session = get_name_of_session_from_timetable(upcoming_session_timetable)
+
+    print(f"Current or Upcoming Race: {name_of_meeting}")
+    print(f"Upcoming Session: {name_of_upcoming_session}")
+
+    time_zone_as_string = "(UTC)"
+
+    if user_time:
+        user_gmt_offset = datetime.datetime.now().astimezone().utcoffset().total_seconds() / 3600
+        user_gmt_offset_time_delta = datetime.timedelta(hours=user_gmt_offset)
+        upcoming_session_start_time = upcoming_session_start_time + user_gmt_offset_time_delta
+        time_zone_as_string = "(Local)"
+
+    print(f"Upcoming Session Start Time {time_zone_as_string}: {upcoming_session_start_time.strftime('%H:%M %A %d %B %Y')}")
+
+
+def get_name_of_session_from_timetable(session_info: dict) -> str:
+    """
+    Returns the name of the session from a timetable dictionary returned from the session api
+    :param session_info: session api -> seasonContext -> timetables -> any element
+    :return:
+    """
+
+    return session_info['description']
 
 if __name__ == "__main__":
     print(season_api_is_showing())
@@ -187,3 +318,19 @@ if __name__ == "__main__":
     print(get_first_session_start_of_upcoming_or_current_meeting_in_utc())
 
     print(get_name_of_event_or_meeting(get_next_or_current_meeting_info()))
+
+    print(get_session_json_from_a_meeting_key('1258'))
+
+    print(get_the_upcoming_or_current_sessions_for_a_meeting())
+
+    print(get_session_list(get_the_upcoming_or_current_sessions_for_a_meeting()))
+
+    print(f"upcoming session dictionary: {get_upcoming_session()}")
+
+    print()
+
+    print(get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(get_upcoming_session()))
+
+    next_session_info_print()
+
+    next_session_info_print(user_time=True)
