@@ -159,6 +159,22 @@ def get_first_session_start_of_upcoming_or_current_meeting_in_utc() -> datetime.
 
     return get_start_time_of_event_or_meeting_in_utc(current_or_upcoming_meeting)
 
+def get_name_of_event_or_meeting(meeting: dict) -> str:
+    """
+    Returns the name of the event or meeting based on
+
+    https://api.formula1.com/v1/editorial-eventlisting/events call
+
+    respoonse.json() -> events -> some element -> meeeting param for this function
+
+    response.json()[events][0-n]
+
+    :param meeting: a return from api call above then events key then some element
+    :return: a string for the name for the event
+    """
+
+    return meeting['meetingName']
+
 
 
 if __name__ == "__main__":
@@ -169,3 +185,5 @@ if __name__ == "__main__":
     print(get_next_or_current_meeting_info())
 
     print(get_first_session_start_of_upcoming_or_current_meeting_in_utc())
+
+    print(get_name_of_event_or_meeting(get_next_or_current_meeting_info()))
