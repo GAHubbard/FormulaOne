@@ -1,5 +1,6 @@
 """
 Contains useful ways to get schedule information using F1's API
+
 """
 
 import load_dotenv
@@ -200,20 +201,23 @@ def get_the_upcoming_or_current_sessions_for_a_meeting() -> dict:
     return get_session_json_from_a_meeting_key(meeting_key)
 
 
-def get_session_list(session_dict: dict) -> list[dict]:
+def get_session_timetable_list_from_all_session_dict_for_a_meeting(session_dict: dict) -> list[dict]:
     """
-    Returns sessions for a meeting when given the session_dictionary return from the session api
+    Returns sessions for a meeting when given the all session_dictionary return from the session api
+    
+    ** kinda confusing because in this instance session is kinda a meeting because the session dict argument
+    ** actually contains all the sessions in a meeting
 
     :param session_dict: is a session return using a meetingKey or the upcoming current sessions
     :return:
     """
 
-    return session_dict['seasonContext']['timetables']
+    return session_dict['meetingContext']['timetables']
 
 
-def get_upcoming_or_ongoing_session() -> dict:
+def get_upcoming_or_ongoing_session_timetable() -> dict:
     """
-    Returns a dictionary with information on the upcoming session
+    Returns a dictionary with timetable information on the upcoming session
 
     ** if the session is still scheduled to be ongoing then it will return the current session **
 
@@ -228,7 +232,7 @@ def get_upcoming_or_ongoing_session() -> dict:
     sessions_info = get_the_upcoming_or_current_sessions_for_a_meeting()
 
     # get the session list for that meeting
-    session_list = get_session_list(sessions_info)
+    session_list = get_session_timetable_list_from_all_session_dict_for_a_meeting(sessions_info)
 
     # get the current time in utc
     current_time_in_utc: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)
@@ -251,9 +255,9 @@ def get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(spe
     """
     Returns a datetime object for the session start time in utc from a timetables list
 
-    argument for this function: using the session api return -> seasonContext -> timetables -> any element
+    argument for this function: using the session api return -> meetingContext -> timetables -> any element
 
-    :param specific_session_in_timetables_list: session_dictionary_from_session_api['seasonContext']['timetables'][0-n]
+    :param specific_session_in_timetables_list: session_dictionary_from_session_api['meetingContext']['timetables'][0-n]
     :return: a utc datetime object for the session start time in utc
     """
 
@@ -279,9 +283,9 @@ def get_session_end_time_in_utc_from_timetables_list_in_session_dictionary(speci
     """
     Returns a datetime object for the session end time in utc from a timetables list
 
-    argument for this function: using the session api return -> seasonContext -> timetables -> any element
+    argument for this function: using the session api return -> meetingContext -> timetables -> any element
 
-    :param specific_session_in_timetables_list: session_dictionary_from_session_api['seasonContext']['timetables'][0-n]
+    :param specific_session_in_timetables_list: session_dictionary_from_session_api['meetingContext']['timetables'][0-n]
     :return: a utc datetime object for the session end time in utc
     """
 
@@ -313,7 +317,7 @@ def next_session_info_print(user_time: bool = False) -> None:
     upcoming_or_current_meeting = get_next_or_current_meeting_info()
     name_of_meeting = get_name_of_event_or_meeting(upcoming_or_current_meeting)
 
-    upcoming_session_timetable = get_upcoming_or_ongoing_session()
+    upcoming_session_timetable = get_upcoming_or_ongoing_session_timetable()
 
     upcoming_session_start_time = get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(upcoming_session_timetable)
 
@@ -336,7 +340,7 @@ def next_session_info_print(user_time: bool = False) -> None:
 def get_name_of_session_from_timetable(session_info: dict) -> str:
     """
     Returns the name of the session from a timetable dictionary returned from the session api
-    :param session_info: session api -> seasonContext -> timetables -> any element
+    :param session_info: session api -> meetingContext -> timetables -> any element
     :return:
     """
 
@@ -349,7 +353,7 @@ def scheduled_session_status() -> None:
     :return:
     """
 
-    current_or_upcoming_session = get_upcoming_or_ongoing_session()
+    current_or_upcoming_session = get_upcoming_or_ongoing_session_timetable()
 
     current_utc_datetime = datetime.datetime.now(datetime.timezone.utc)
 
@@ -357,11 +361,71 @@ def scheduled_session_status() -> None:
         print(f"Session is upcoming")
         next_session_info_print(user_time=True)
 
-    # this conditional might be redundnat because the get_upcoming_or_ongoing_session will just return the current session if it hasn't ended yet
+    # this conditional might be redundnat because the get_upcoming_or_ongoing_session_timetable will just return the current session if it hasn't ended yet
     # it might just need to be else by itself
     elif current_utc_datetime > get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(current_or_upcoming_session):
         print(f"Session is in progress")
         next_session_info_print(user_time=True)
+
+
+def create_session_path_for_current_or_upcoming_session() -> str:
+    """
+    creates a session path for current or upcoming session
+
+    This helps to figure out the url to check for the JSON paths because they have on occasion changed
+
+    creates something like
+
+    "2025/2025-04-13_Bahrain_Grand_Prix/2025-04-11_Practice_1"
+
+    This helps out with figuring out the url below
+
+    https://livetiming.formula1.com/static/2025/2025-04-13_Bahrain_Grand_Prix/2025-04-11_Practice_1/Index.json
+
+    which contains the jsonstreams or hubs for data
+
+    :return: string like 2025/2025-04-13_Bahrain_Grand_Prix/2025-04-11_Practice_1
+    """
+
+    # get current year
+    current_year = datetime.datetime.now().year
+
+    # get all the sessions for the current or upcoming meeting
+    all_session_for_upcoming_current_meeting_dict = get_the_upcoming_or_current_sessions_for_a_meeting()
+
+    # get the session timetable list
+    sessions_for_current_upcoming = get_session_timetable_list_from_all_session_dict_for_a_meeting(all_session_for_upcoming_current_meeting_dict)
+
+    # get the last timetabe which should be for the race
+    race_session_time_table = sessions_for_current_upcoming[-1]
+
+    # get the local date string in local time (the date if you were at the race)
+    race_day_as_path_string = race_session_time_table['startTime'][:10]
+
+    name_of_meeting = get_name_of_event_or_meeting(get_next_or_current_meeting_info())
+
+    # convert spaces to _
+    name_of_meeting_replace_spaces = name_of_meeting.replace(' ', '_')
+
+    # add a _ to the beginning
+    name_of_meeting_final_form = '_' + name_of_meeting_replace_spaces
+
+    # now get day of session local
+    upcoming_current_session_timetable = get_upcoming_or_ongoing_session_timetable()
+
+    # get the local day of the upcoming or current session
+    session_date_as_string = upcoming_current_session_timetable['startTime'][:10]
+
+    session_name = upcoming_current_session_timetable['description']
+
+    session_name_replace_spaces = session_name.replace(' ', '_')
+
+    session_name_final_form = '_' + session_name_replace_spaces
+
+    return f"{current_year}/{race_day_as_path_string}{name_of_meeting_final_form}/{session_date_as_string}{session_name_final_form}"
+
+
+
 
 if __name__ == "__main__":
     print(season_api_is_showing())
@@ -378,13 +442,13 @@ if __name__ == "__main__":
 
     print(get_the_upcoming_or_current_sessions_for_a_meeting())
 
-    print(get_session_list(get_the_upcoming_or_current_sessions_for_a_meeting()))
+    print(get_session_timetable_list_from_all_session_dict_for_a_meeting(get_the_upcoming_or_current_sessions_for_a_meeting()))
 
-    print(f"upcoming session dictionary: {get_upcoming_or_ongoing_session()}")
+    print(f"upcoming session dictionary: {get_upcoming_or_ongoing_session_timetable()}")
 
     print()
 
-    print(get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(get_upcoming_or_ongoing_session()))
+    print(get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(get_upcoming_or_ongoing_session_timetable()))
 
     next_session_info_print()
 
@@ -393,3 +457,5 @@ if __name__ == "__main__":
     print()
 
     scheduled_session_status()
+
+    print(f"Session Path Current or Upcoming: {create_session_path_for_current_or_upcoming_session()}")
