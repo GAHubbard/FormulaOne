@@ -7,13 +7,6 @@ import os
 import requests
 import datetime
 
-"""
-!! TODO !! try out /en/racing/2025/bahrain
-!! TODO !! countryKey is 36
-!! TODO !! meetingKey is 1257
-
-"""
-
 # Load environment variables from .env file
 load_dotenv.load_dotenv()
 
