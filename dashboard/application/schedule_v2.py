@@ -214,6 +214,12 @@ def get_session_timetable_list_from_all_session_dict_for_a_meeting(session_dict:
 
     return session_dict['meetingContext']['timetables']
 
+def get_prior_session_timetable() -> dict:
+    """
+    Returns a dictionary timetable for the prior session
+
+    :return:
+    """
 
 def get_upcoming_or_ongoing_session_timetable() -> dict:
     """
@@ -424,8 +430,60 @@ def create_session_path_for_current_or_upcoming_session() -> str:
 
     return f"{current_year}/{race_day_as_path_string}{name_of_meeting_final_form}/{session_date_as_string}{session_name_final_form}"
 
+def get_prior_session_path() -> str:
+    """
+    Gets the prior session path which should work and return all the json streams that are available
 
+    ** this is kinda overkill because they don't change the paths that often, but in case they do this will tell you
+    ** what is available
 
+    :return:
+    """
+
+    # get current year
+    current_year = datetime.datetime.now().year
+
+    # get all the sessions for the current or upcoming meeting
+    all_session_for_upcoming_current_meeting_dict = get_the_upcoming_or_current_sessions_for_a_meeting()
+
+    # get the session timetable list
+    sessions_for_current_upcoming = get_session_timetable_list_from_all_session_dict_for_a_meeting(all_session_for_upcoming_current_meeting_dict)
+
+    # check to see if upcoming or ongoing session is the first session
+    # because then we need to go to the race of the last meeting
+    end_time_of_first_session_utc = get_session_end_time_in_utc_from_timetables_list_in_session_dictionary(sessions_for_current_upcoming[0])
+
+    if datetime.datetime.now(datetime.timezone.utc) < end_time_of_first_session_utc:
+        # we gotta get the last session of the prior meeting
+        pass
+
+    # get the last timetabe which should be for the race
+    race_session_time_table = sessions_for_current_upcoming[-1]
+
+    # get the local date string in local time (the date if you were at the race)
+    race_day_as_path_string = race_session_time_table['startTime'][:10]
+
+    name_of_meeting = get_name_of_event_or_meeting(get_next_or_current_meeting_info())
+
+    # convert spaces to _
+    name_of_meeting_replace_spaces = name_of_meeting.replace(' ', '_')
+
+    # add a _ to the beginning
+    name_of_meeting_final_form = '_' + name_of_meeting_replace_spaces
+
+    # now get day of session local
+    upcoming_current_session_timetable = get_upcoming_or_ongoing_session_timetable()
+
+    # get the local day of the upcoming or current session
+    session_date_as_string = upcoming_current_session_timetable['startTime'][:10]
+
+    session_name = upcoming_current_session_timetable['description']
+
+    session_name_replace_spaces = session_name.replace(' ', '_')
+
+    session_name_final_form = '_' + session_name_replace_spaces
+
+    return f"{current_year}/{race_day_as_path_string}{name_of_meeting_final_form}/{session_date_as_string}{session_name_final_form}"
 
 if __name__ == "__main__":
     print(season_api_is_showing())

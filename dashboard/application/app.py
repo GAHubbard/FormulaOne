@@ -96,5 +96,6 @@ if __name__ == "__main__":
     It then figures out the API endpoint paths for the session and starts the application with that path.
     [This could probably be explained better in the future]
     """
-    session_path_test = '2025/2025-03-23_Chinese_Grand_Prix/2025-03-21_Sprint_Qualifying/'     # race path for testing purposes
+    # 2025/2025-04-20_Saudi_Arabian_Grand_Prix/2025-04-19_Practice_3/
+    session_path_test = '2025/2025-04-20_Saudi_Arabian_Grand_Prix/2025-04-19_Practice_3/'     # race path for testing purposes
     main(session_path_test)
