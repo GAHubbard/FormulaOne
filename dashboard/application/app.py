@@ -69,15 +69,14 @@ def get_jsonstreams(session_path: str) -> list[str] | None:
     """
 
     feeds: list[str] = []  # streams to return
-    race_scheme = 'https'
-    race_netloc = 'livetiming.formula1.com'
-    full_path = f'static/{session_path}Index.json'  # insert session_path into url
 
-    # Create the URL using custom function
-    race_url = utils.create_url(race_scheme, race_netloc, full_path)
+    # url for streams
+    # it's kind of weird because we just use a recent session path instead of the live or upcoming because
+    # the upcoming path isn't available
+    race_feed_url = f"https://livetiming.formula1.com/static/{session_path}Index.json"
 
     # Get response that returns JSON API end points
-    response = requests.get(race_url)
+    response = requests.get(race_feed_url)
     if response.status_code == 200:
         stream_data: dict = json.loads(response.content)
 
@@ -86,7 +85,7 @@ def get_jsonstreams(session_path: str) -> list[str] | None:
             feeds.append(feed)
     else:
         feeds = None
-    
+
     return feeds  # return the list of .json paths such as []
 
 
@@ -96,6 +95,5 @@ if __name__ == "__main__":
     It then figures out the API endpoint paths for the session and starts the application with that path.
     [This could probably be explained better in the future]
     """
-    # 2025/2025-04-20_Saudi_Arabian_Grand_Prix/2025-04-19_Practice_3/
     session_path_test = '2025/2025-04-20_Saudi_Arabian_Grand_Prix/2025-04-19_Practice_3/'     # race path for testing purposes
     main(session_path_test)
