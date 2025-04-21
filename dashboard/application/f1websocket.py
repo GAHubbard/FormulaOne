@@ -44,7 +44,7 @@ class F1WebSocket:
         A: list of arguments for the function - these happen to be what feeds you want to subscribe to
         I: message ID.  Usually you increment this with every new request sent to server.  The purpose of this
         is to help the client know what specific server message is attached to a specific client message.
-        :return:
+        :return: a string with the feeds we want to subscribe to
         """
         self._increase_message_count()  # increment the message count
         return json.dumps({"H": "Streaming", "M": "Subscribe", "A": [self.feeds], "I": self._message_count})
@@ -82,6 +82,7 @@ class F1WebSocket:
         websocket_scheme = 'wss'
         self._get_token_and_cookie()
         websocket_url = utils.create_url(scheme = websocket_scheme, netloc = self.netloc, path = websocket_path, query_parameters = self._parameters)
+
         return websocket_url
 
     def connection(self) -> WebSocket:

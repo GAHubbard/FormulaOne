@@ -19,6 +19,7 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
     Gets data from F1's Live Timing API endpoint and saves it to a file.
     and updates a global variable. A lot of what is going on here right now is for testing but this will
     be getting the data in the final product.
+
     :param feeds: list of feeds names to get data from these are the arguments we pass to the server function named
     Subscribe.  This function then returns us messages giving us data for every argument we pass.
     Logically these are the list of feeds we want data on.

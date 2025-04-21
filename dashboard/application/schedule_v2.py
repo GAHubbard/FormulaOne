@@ -245,6 +245,8 @@ def get_upcoming_or_ongoing_session_timetable() -> dict:
 
     if current_time_in_utc < get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session_list[0]):
         return session_list[0]
+    elif current_time_in_utc > get_session_end_time_in_utc_from_timetables_list_in_session_dictionary(session_list[-1]):
+        return session_list[-1]
     else:
         for index, session in enumerate(session_list):
             if get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session) < current_time_in_utc <= get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(session_list[index + 1]):
@@ -369,8 +371,13 @@ def scheduled_session_status() -> None:
 
     # this conditional might be redundnat because the get_upcoming_or_ongoing_session_timetable will just return the current session if it hasn't ended yet
     # it might just need to be else by itself
-    elif current_utc_datetime > get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(current_or_upcoming_session):
+    elif get_session_start_time_in_utc_from_timetables_list_in_session_dictionary(current_or_upcoming_session) < current_utc_datetime <= get_session_end_time_in_utc_from_timetables_list_in_session_dictionary(current_or_upcoming_session):
         print(f"Session is in progress")
+        next_session_info_print(user_time=True)
+    else:
+        print(f"Sadly, Race weekend is over (at least scheduled to be over)")
+        current_utc_datetime = datetime.datetime.now(datetime.timezone.utc)
+        print(f"Next Week's Event will be posted next UTC day. It is now in UTC: {current_utc_datetime}")
         next_session_info_print(user_time=True)
 
 
