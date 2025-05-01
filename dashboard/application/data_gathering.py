@@ -53,7 +53,7 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
                 if output_to_file:
                         output_file.write(str(data) + '\n')
             time_split = time.time() - start_time
-            raw_output_file.write(str({time_split: data}) + '\n')
+            raw_output_file.write(str({time_split: data}) + '\n')  # returns as much as possible
 
 def pass_data_to_global_variable(feed: str, data: str, timestamp: str):
     
