@@ -55,6 +55,17 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
             time_split = time.time() - start_time
             raw_output_file.write(str({time_split: data}) + '\n')  # returns as much as possible
 
+            if not global_variables.driver_tracker_init:
+                if 'R' in data:
+                    initial_time_stamp_str: str = data['R']['ExtrapolatedClock']['Utc']
+                    initial_time_stamp = datetime.fromisoformat(initial_time_stamp_str.replace('Z', '+00:00'))
+                    global_variables.driver_tracker_dict = (data['R'], initial_time_stamp)
+                    global_variables.driver_tracker_init = True
+
+
+
+
+
 def pass_data_to_global_variable(feed: str, data: str, timestamp: str):
     
     pass

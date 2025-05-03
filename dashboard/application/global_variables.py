@@ -3,6 +3,14 @@ Global Variables File
 Contains global variables along with functions related to them
 """
 
+# these init variables serve as flags that ensure the R runs once
+driver_tracker_init = False
+
+# these variables hold the values of the JsonStreams
+driver_tracker = ()
+
+# Below lines may not be recent
+
 SESSION_INFO = None
 ARCHIVE_STATUS = None
 TRACKING_STATUS = None
@@ -34,5 +42,3 @@ CURRENT_TYRES = None
 OVERTAKE_SERIES = None
 PIT_LANE_TIME_COLLECTION = None
 PIT_STOP_SERIES = None
-
-top_three_test = ""
