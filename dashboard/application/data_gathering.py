@@ -55,12 +55,44 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
             time_split = time.time() - start_time
             raw_output_file.write(str({time_split: data}) + '\n')  # returns as much as possible
 
-            if not global_variables.driver_tracker_init:
-                if 'R' in data:
+            if 'R' in data:
+                if not global_variables.driver_tracker_bool_initalized:
+                    global_variables.driver_tracker_bool_initalized = True
                     initial_time_stamp_str: str = data['R']['ExtrapolatedClock']['Utc']
                     initial_time_stamp = datetime.fromisoformat(initial_time_stamp_str.replace('Z', '+00:00'))
-                    global_variables.driver_tracker_dict = (data['R'], initial_time_stamp)
-                    global_variables.driver_tracker_init = True
+                    global_variables.driver_tracker.append(data['R']['DriverTracker'])
+                    global_variables.driver_tracker.append(initial_time_stamp)
+
+            if 'M' in data:
+                # see whats in M and update accoringly
+                # data['M'} will be a list of elements
+                for update in data['M']:
+                    update_info = update['A'] # this is silly but whatever
+                    # now we check for different feeds here
+                    feed_name: str = update_info[0]
+                    feed_data: dict = update_info[1]
+                    feed_timestamp = update_info[2]
+                    feed_timestamp_dt: datetime = datetime.fromisoformat(feed_timestamp.replace('Z', '+00:00'))
+
+                    # update just the DriverTracker Output
+                    if feed_name == 'DriverTracker':
+                        # timestamp update
+                        global_variables.driver_tracker[1] = feed_timestamp_dt
+
+                        # make a local copy of R DriverTracker
+                        local_copy_driver_tracker: dict = global_variables.driver_tracker[0]
+                        # get the keys in M message / feed_data
+                        for key, value in feed_data.items():
+                            if isinstance(value, dict):
+                                for key_1, value_1 in feed_data[key].items():
+                                    for key_2, value_2 in feed_data[key][key_1].items():
+                                        local_copy_driver_tracker[key][int(key_1)][key_2] = value_2
+                            else:
+                                local_copy_driver_tracker[key] = value
+
+
+
+
 
 
 
