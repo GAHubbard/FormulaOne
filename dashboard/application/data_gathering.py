@@ -62,6 +62,12 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
                     initial_time_stamp = datetime.fromisoformat(initial_time_stamp_str.replace('Z', '+00:00'))
                     global_variables.driver_tracker.append(data['R']['DriverTracker'])
                     global_variables.driver_tracker.append(initial_time_stamp)
+                if not global_variables.track_status_bool_initalized:
+                    global_variables.track_status_bool_initalized = True
+                    initial_time_stamp_str: str = data['R']['ExtrapolatedClock']['Utc']
+                    initial_time_stamp = datetime.fromisoformat(initial_time_stamp_str.replace('Z', '+00:00'))
+                    global_variables.track_status.append(data['R']['TrackStatus']['Message'])
+                    global_variables.track_status.append(initial_time_stamp)
 
             if 'M' in data:
                 # see whats in M and update accoringly
@@ -89,6 +95,9 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
                                         local_copy_driver_tracker[key][int(key_1)][key_2] = value_2
                             else:
                                 local_copy_driver_tracker[key] = value
+                    if feed_name == 'TrackStatus':
+                        global_variables.track_status[1]: datetime = feed_timestamp_dt
+                        global_variables.track_status[0] = feed_data['Message']
 
 
 

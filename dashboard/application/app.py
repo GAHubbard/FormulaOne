@@ -12,6 +12,7 @@ import global_variables             # Custom package for dealing with global var
 import utils                        # Custom package
 import requests                     # pip install requests
 import data_processing
+import display
 
 def global_print():
     """
@@ -49,7 +50,9 @@ def main(session_path: str) -> None:
     # create the threads definitions (target and args)
     # each key in this dictionary is a function meant to be a thread and its value is the arguments as a tuple
     # the key also needs to be the object that represents the function not a string
-    thread_targets_and_args = {data_gathering.session: (feeds, True,), data_processing.print_driver_list: ()}
+    thread_targets_and_args = {data_gathering.session: (feeds, True,),
+                               data_processing.print_driver_list: (),
+                               display.display_rows: ()}
 
     # loop through and start each thread
     for key, value in thread_targets_and_args.items():

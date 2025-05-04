@@ -5,9 +5,11 @@ Contains global variables along with functions related to them
 
 # these init variables serve as flags that ensure the R runs once
 driver_tracker_bool_initalized = False
+track_status_bool_initalized = False
 
 # these variables hold the values of the JsonStreams
 driver_tracker: list = []
+track_status: list = []
 
 # Below lines may not be recent
 
