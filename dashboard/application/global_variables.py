@@ -3,6 +3,9 @@ Global Variables File
 Contains global variables along with functions related to them
 """
 
+# global R data sent at the beginning and every now and then
+signal_r_romeo_message_object = {}
+
 # these init variables serve as flags that ensure the R runs once
 driver_tracker_bool_initalized = False
 track_status_bool_initalized = False

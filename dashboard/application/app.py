@@ -92,12 +92,50 @@ def get_jsonstreams(session_path: str) -> list[str] | None:
 
     return feeds  # return the list of .json paths such as []
 
+def new_main(cli_flag = True) -> None:
+    """
+    New main function that does old main but a little better now that we have learned how to get data from F1 better
+    :return:
+    """
+
+    # initialize the various Threads
+    threads: list[Thread] = []
+
+    # if in CLI mode
+    if cli_flag:
+
+        # ask user if they want to download raw data (debug mode) or just enter normal mode
+        display.debug_or_normal_mode()
+
+        # create the threads definitions (target and args)
+        # each key in this dictionary is a function meant to be a thread and its value is the arguments as a tuple
+        # the key also needs to be the object that represents the function not a string
+        thread_targets_and_args = {data_gathering.session_new: (),
+                                   display.display_rows: ()}
+
+        # loop through and start each thread
+        for key, value in thread_targets_and_args.items():
+            thread = Thread(target=key, args=value)
+            thread.start()
+            threads.append(thread)
+
+        # join each thread back to the main thread when they finish
+        for thread in threads:
+            thread.join()
+    else:
+        # non CLI mode
+        pass
+
 
 if __name__ == "__main__":
     """
     This section is intended to be run whenever the session finder finds a session.
     It then figures out the API endpoint paths for the session and starts the application with that path.
     [This could probably be explained better in the future]
+    [Or maybe we implement this differently]
     """
-    session_path_test = '2025/2025-04-20_Saudi_Arabian_Grand_Prix/2025-04-19_Practice_3/'     # race path for testing purposes
-    main(session_path_test)
+    # testing out new main function that fixes a lot of the stuff we did wrong before
+    new_main()  # You can put cli_flag = False as an arugment and you will get the non CLI behavior
+    # end of test
+    #session_path_test = '2025/2025-04-20_Saudi_Arabian_Grand_Prix/2025-04-19_Practice_3/'     # race path for testing purposes
+    #main(session_path_test)

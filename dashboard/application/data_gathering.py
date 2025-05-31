@@ -99,7 +99,8 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
                         global_variables.track_status[1]: datetime = feed_timestamp_dt
                         global_variables.track_status[0] = feed_data['Message']
 
-
+def session_new():
+    pass
 
 
 
