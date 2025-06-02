@@ -6,12 +6,14 @@ Date: 2024-12-30
 
 
 from datetime import datetime           # base python
+
 from f1websocket import F1WebSocket     # custom file
 from contextlib import closing          # base python
 from dateutil import parser             # pip install python-dateutil
 import json                             # base python
 import global_variables                 # custom file
 import time
+import display                          # custom file
 
 
 def session(feeds: list[str] | None, output_to_file: bool = False):
@@ -100,13 +102,44 @@ def session(feeds: list[str] | None, output_to_file: bool = False):
                         global_variables.track_status[0] = feed_data['Message']
 
 def session_new():
-    pass
+    # create custom web socket
+    # it will still create the correct websocket with None as an argument
+    websocket = F1WebSocket(None)
+    session_status = True
+
+    # ensure proper closing of websocket
+    with closing(websocket.connection()) as conn:
+        # Send message to SignalR endpoint to request specific data
+        conn.send(websocket.invoke_data)
+
+        # data gathering loop
+        while session_status:
+
+            # recieve data
+            data = json.loads(conn.recv())
+
+            # R messages contain entire data set
+            if 'R' in data:
+                handle_r_message(data)
+            # M messages contain updates to portions
+            elif 'M' in data:
+                handle_m_message(data)
 
 
+# r status flags
+first_r = False
+last_r_time: datetime = None
+def handle_r_message(data):
 
+    # first R on run behavior
+    if not first_r:
+        last_r_time = datetime.now()
+        display.data_gathering_status_line = f"Downloaded Initial Dataset...R: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
 
-
-
+    # other R during runs
+    else:
+        last_r_time = datetime.now()
+        display.data_gathering_status_line = f"New R Message...R: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
 
 def pass_data_to_global_variable(feed: str, data: str, timestamp: str):
     

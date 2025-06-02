@@ -11,6 +11,8 @@ driver_list: list[str] = [] # driver list data
 
 other_data: list[str] = []
 
+data_gathering_status_line: str = "" # data gathering status line
+
 term = blessed.Terminal()
 
 def display_rows():
@@ -42,10 +44,10 @@ def display_rows():
             for index, value in enumerate(other_data_copy):
                 print(f"{value}")
 
-def debug_or_normal_mode() -> None:
+def debug_or_normal_mode() -> bool:
     """
     Prompts the user to enter debug or normal mode
-    :return:
+    :return: Returns True if normal mode, False if debug mode
     """
 
     with term.fullscreen(), term.cbreak(), term.hidden_cursor():
@@ -57,28 +59,29 @@ def debug_or_normal_mode() -> None:
         # way out of loop is to press Q or q or enter key
         while True:
             print(term.home + term.clear, end='')  # clear terminal and go to top
-            print(term.move_xy(0,0) + term.bold, f"Press q to quit, left / right arrows, and enter", end='')
-            print(term.move_xy(0,1) + term.yellow +  f"Do you want to enter " ,end='')
+            print(term.move_xy(0,0) + term.bold + f"Press q to quit, left / right arrows, and enter" + term.normal, end='')
+            print(term.move_xy(0,1) + term.yellow +  f"Do you want to enter " + term.normal,end='')
 
             if normal_mode_true_debug_false_flag:  # normal mode is selected
-                print(term.bold, term.underline, f"Normal Mode", end='')
-                print(f"| Debug Mode")
+                print(term.bold + term.underline + f"Normal Mode" + term.normal, end='')
+                print(f" | Debug Mode", end='')
+                print(term.cyan + " ?" + term.normal)
             else:  # debug mode is selected
                 print(f"Normal Mode | ", end='')
-                print(term.bold, term.underline, f"Debug Mode")
+                print(term.bold + term.underline + f"Debug Mode" + term.normal, end='')
+                print(term.cyan + " ?" + term.normal)
 
             key = term.inkey()  # get key input from user
 
             # this exits the program if the user
-            if key.lower() == 'q' or key.upper() == 'Q':
+            if key.lower() == 'q':
                 quit_flag = True
                 break
-
-            if key.name == 'KEY_LEFT':
+            elif key.name == 'KEY_LEFT':
                 normal_mode_true_debug_false_flag = True
-            if key.name == 'KEY_RIGHT':
+            elif key.name == 'KEY_RIGHT':
                 normal_mode_true_debug_false_flag = False
-            if key.name == 'KEY_ENTER':
+            elif key.name == 'KEY_ENTER':
                 break
 
         # now check to see if they wanted to quit
@@ -86,8 +89,6 @@ def debug_or_normal_mode() -> None:
             exit()
         else:
             if normal_mode_true_debug_false_flag:
-                # normal_mode()
-                pass
+                return True
             else:
-                # debug_mode()
-                pass
+                return False

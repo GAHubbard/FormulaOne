@@ -105,25 +105,31 @@ def new_main(cli_flag = True) -> None:
     if cli_flag:
 
         # ask user if they want to download raw data (debug mode) or just enter normal mode
-        display.debug_or_normal_mode()
+        normal_true_or_debug_false: bool = display.debug_or_normal_mode()
 
-        # create the threads definitions (target and args)
-        # each key in this dictionary is a function meant to be a thread and its value is the arguments as a tuple
-        # the key also needs to be the object that represents the function not a string
-        thread_targets_and_args = {data_gathering.session_new: (),
-                                   display.display_rows: ()}
+        # normal mode
+        if normal_true_or_debug_false:
+            # create the threads definitions (target and args)
+            # each key in this dictionary is a function meant to be a thread and its value is the arguments as a tuple
+            # the key also needs to be the object that represents the function not a string
+            thread_targets_and_args = {data_gathering.session_new: (),
+                                       display.display_rows: ()}
 
-        # loop through and start each thread
-        for key, value in thread_targets_and_args.items():
-            thread = Thread(target=key, args=value)
-            thread.start()
-            threads.append(thread)
+            # loop through and start each thread
+            for key, value in thread_targets_and_args.items():
+                thread = Thread(target=key, args=value)
+                thread.start()
+                threads.append(thread)
 
-        # join each thread back to the main thread when they finish
-        for thread in threads:
-            thread.join()
+            # join each thread back to the main thread when they finish
+            for thread in threads:
+                thread.join()
+
+        else:  # debug mode
+            pass
     else:
         # non CLI mode
+        # prior behavior and probably website stuff
         pass
 
 
