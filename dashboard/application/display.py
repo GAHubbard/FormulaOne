@@ -1,11 +1,13 @@
+import datetime
 import blessed
 import time
+import global_variables
 
-from reflex_chakra import breadcrumb_separator
-
-control_row: str = ""  # row gives user options on what to do
+control_row: str = "Press q to quit"  # row gives user options on what to do
 time_row: str = ""     # row gives the latest time
-status_row: str = ""   # row gives the status of the track
+
+test_time = datetime.datetime.now()
+status_row: list = ["UNKNOWN", test_time]   # row gives the status of the track
 
 driver_list: list[str] = [] # driver list data
 
@@ -20,14 +22,14 @@ def display_rows():
     Displays to Terminal based on rows
     :return:
     """
-    time.sleep(45)
 
     with term.fullscreen(), term.cbreak(), term.hidden_cursor():
 
         while True:
-            time.sleep(2)
 
             print(term.clear + term.move_xy(0,0), end='')
+
+            print(f"{control_row}")
 
             print(f"{time_row}")
 
@@ -43,6 +45,16 @@ def display_rows():
             other_data_copy = other_data.copy()
             for index, value in enumerate(other_data_copy):
                 print(f"{value}")
+
+            print(f"{data_gathering_status_line}")
+
+            key = term.inkey(timeout=1)
+
+            if key == "q":
+                time.sleep(5)
+                global_variables.session_status = False
+                break
+
 
 def debug_or_normal_mode() -> bool:
     """
