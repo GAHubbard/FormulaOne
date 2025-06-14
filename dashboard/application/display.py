@@ -15,7 +15,7 @@ other_data: list[str] = []
 
 data_gathering_status_line: str = "" # data gathering status line
 
-term = blessed.Terminal()
+term = blessed.Terminal()  # return a blessed terminal object
 
 def display_rows():
     """
