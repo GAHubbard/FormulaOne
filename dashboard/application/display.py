@@ -1,19 +1,28 @@
 import datetime
 import blessed
 import time
+
+import json_explore
+
 import global_variables
 
-control_row: str = "Press q to quit"  # row gives user options on what to do
+control_row: str = "Press q to quit, p to pause (30), d to dive into Position.z"  # row gives user options on what to do
 time_row: str = ""     # row gives the latest time
 
 test_time = datetime.datetime.now()
 status_row: list = ["UNKNOWN", test_time]   # row gives the status of the track
+
+r_status_row = ""
 
 driver_list: list[str] = [] # driver list data
 
 other_data: list[str] = []
 
 data_gathering_status_line: str = "" # data gathering status line
+
+last_r_data_set_line: str = ""
+
+last_44_position_data: str = ""
 
 term = blessed.Terminal()  # return a blessed terminal object
 
@@ -22,38 +31,73 @@ def display_rows():
     Displays to Terminal based on rows
     :return:
     """
+    while global_variables.session_status:
+        run_json_explore = False
 
-    with term.fullscreen(), term.cbreak(), term.hidden_cursor():
+        with term.fullscreen(), term.cbreak(), term.hidden_cursor():
 
-        while True:
+            while True:
 
-            print(term.clear + term.move_xy(0,0), end='')
+                print(term.clear + term.move_xy(0,0), end='')
 
-            print(f"{control_row}")
+                print(f"{control_row}")
 
-            print(f"{time_row}")
+                print(f"{time_row}")
 
-            print(f"Status: {status_row[0]} as of {status_row[1].strftime('%H:%M:%S')}")
+                print(f"{r_status_row}")
 
-            driver_list_copy = driver_list.copy()
+                print(f"Status: {status_row[0]} as of {status_row[1].strftime('%H:%M:%S')}")
 
-            for index, value in enumerate(driver_list_copy):
-                print(f"{index + 1}: {value}")
+                driver_list_copy = driver_list.copy()
 
-            print()
+                for index, value in enumerate(driver_list_copy):
+                    print(f"{index + 1}: {value}")
 
-            other_data_copy = other_data.copy()
-            for index, value in enumerate(other_data_copy):
-                print(f"{value}")
+                print()
 
-            print(f"{data_gathering_status_line}")
+                other_data_copy = other_data.copy()
+                for index, value in enumerate(other_data_copy):
+                    print(f"{value}")
 
-            key = term.inkey(timeout=1)
+                print(f"{data_gathering_status_line}")
 
-            if key == "q":
-                time.sleep(5)
-                global_variables.session_status = False
-                break
+                print()
+
+                print(f"{last_r_data_set_line}")
+
+                print(term.move_xy(0,25), end='')
+
+                print(f"{last_44_position_data}")
+
+                key = term.inkey(timeout=1)
+
+                if key == "q":
+                    time.sleep(5)
+                    timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H%M")
+                    filename = f"position_map_44_{timestamp}.txt"
+                    try:
+                        with open(filename, 'w') as f:
+                            for position_entry in global_variables.position_map_44:
+                                f.write(f"{position_entry}\n")
+                        print(f"Saved position map to {filename}")
+                    except Exception as e:
+                        print(f"Failed to save position map to {filename}")
+                    global_variables.session_status = False
+                    break
+                if key == "p":
+                    time.sleep(30)
+
+                if key == "d":
+                    run_json_explore = True
+                    break
+
+
+        if run_json_explore:
+            json_explore.json_explore_json(last_r_data_set_line)
+            input("Press anything to return to dashboard...")
+
+        if not global_variables.session_status:
+            break
 
 
 def debug_or_normal_mode() -> bool:

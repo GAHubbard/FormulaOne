@@ -14,7 +14,7 @@ import json                             # base python
 import global_variables                 # custom file
 import time
 import display                          # custom file
-
+import utils                            # custom file
 
 def session(feeds: list[str] | None, output_to_file: bool = False):
     """
@@ -118,7 +118,7 @@ def session_new():
             data = json.loads(conn.recv())
 
             # C messages (i have no idea what they do)
-            if 'C' in data:
+            if 'C' in data and 'M' not in data:
                 handle_c_message(data)
             # R messages contain entire data set
             elif 'R' in data:
@@ -129,28 +129,44 @@ def session_new():
 
 
 # r status flags
-first_r = False
+first_r = True
 last_r_time: datetime = None
+new_r_time: datetime = None
 def handle_r_message(data):
 
     global last_r_time
     global first_r
+    global new_r_time
 
     # first R on run behavior
-    if not first_r:
+    if first_r:
         last_r_time = datetime.now()
         display.data_gathering_status_line = f"Downloaded Initial Dataset...R: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
-        firt_r = True
+        display.r_status_row = f"R initialized as of: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
+        display.last_r_data_set_line = utils.convert_gzip_to_text(data['R']['Position.z'])['Position'][0]['Entries']['44']
+        first_r = False
 
     # other R during runs
     else:
-        last_r_time = datetime.now()
-        display.data_gathering_status_line = f"New R Message...R: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
+        new_r_time = datetime.now()
+        display.data_gathering_status_line = f"New R Message...R last: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')} new R: {new_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
+        display.r_status_row = f"Last R Message: {new_r_time.strftime('%Y-%m-%d %H-%M-%S')} compared to last R: {last_r_time.strftime('%Y-%m-%d %H-%M-%S')}"
+        display.last_r_data_set_line = utils.convert_gzip_to_text(data['R']['Position.z'])['Position'][0]['Entries']['44']
+        last_r_time = new_r_time
 
 
 def handle_m_message(data):
 
     display.data_gathering_status_line = f"New M Message...M: {data}"
+    if len(data['M']) > 0:
+        if 'Position.z' == data['M'][0]['A'][0]:
+            position_dict = utils.convert_gzip_to_text(data['M'][0]['A'][1])
+            position_44 = position_dict['Position'][0]['Entries']['44']
+            last_time_44 = position_dict['Position'][0]['Timestamp']
+            display.last_44_position_data = f"{position_44} at time {last_time_44}"
+            position_44_as_dict = dict(position_44)
+            position_44_as_dict['Timestamp'] = last_time_44
+            global_variables.position_map_44.append(position_44_as_dict)
 
 def handle_c_message(data):
 

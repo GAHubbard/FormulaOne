@@ -3,6 +3,10 @@ Global Variables File
 Contains global variables along with functions related to them
 """
 
+# 44 position map
+position_map_44 = []
+
+
 # global R data sent at the beginning and every now and then
 signal_r_romeo_message_object = {}
 
