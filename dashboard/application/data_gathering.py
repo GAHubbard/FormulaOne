@@ -3,8 +3,7 @@ Needs a better file name. Don't know what this does yet
 Created by: Graham Hubbard
 Date: 2024-12-30
 """
-
-
+import logging
 from datetime import datetime           # base python
 
 from f1websocket import F1WebSocket     # custom file
@@ -159,14 +158,15 @@ def handle_m_message(data):
 
     display.data_gathering_status_line = f"New M Message...M: {data}"
     if len(data['M']) > 0:
-        if 'Position.z' == data['M'][0]['A'][0]:
-            position_dict = utils.convert_gzip_to_text(data['M'][0]['A'][1])
-            position_44 = position_dict['Position'][0]['Entries']['44']
-            last_time_44 = position_dict['Position'][0]['Timestamp']
-            display.last_44_position_data = f"{position_44} at time {last_time_44}"
-            position_44_as_dict = dict(position_44)
-            position_44_as_dict['Timestamp'] = last_time_44
-            global_variables.position_map_44.append(position_44_as_dict)
+        for stream in data['M']:
+            if 'Position.z' == stream['A'][0]:
+                position_dict = utils.convert_gzip_to_text(stream['A'][1])
+                position_44 = position_dict['Position'][0]['Entries']['44']
+                last_time_44 = position_dict['Position'][0]['Timestamp']
+                display.last_44_position_data = f"{position_44} at time {last_time_44}"
+                position_44_as_dict = dict(position_44)
+                position_44_as_dict['Timestamp'] = last_time_44
+                global_variables.position_map_44.append(position_44_as_dict)
 
 def handle_c_message(data):
 
