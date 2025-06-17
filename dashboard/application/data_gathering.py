@@ -166,6 +166,7 @@ def handle_m_message(data):
                 display.last_44_position_data = f"{position_44} at time {last_time_44}"
                 position_44_as_dict = dict(position_44)
                 position_44_as_dict['Timestamp'] = last_time_44
+                # this will show the X Y Z and timestamp almost per second of 44 LH
                 global_variables.position_map_44.append(position_44_as_dict)
 
 def handle_c_message(data):
