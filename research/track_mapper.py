@@ -8,7 +8,7 @@ from pandas import DataFrame
 FILE_PATH_TO_TELEMETRY = r"C:\Users\Matth\PycharmProjects\F1\FormulaOne\dashboard\application\position_map_44_2025-06-15-1444.txt"
 
 
-def convert_telemetry_file_to_dataframe(telemetry_file_path: str) -> pandas.DataFrame:
+def convert_telemetry_file_to_dataframe(telemetry_file_path: str) -> DataFrame:
 
     with open(telemetry_file_path, 'r') as f:
         file_content = f.read()
@@ -37,14 +37,15 @@ def get_min_max_y(telemetry_data: DataFrame) -> (DataFrame, DataFrame):
     return telemetry_data['Y'].min(), telemetry_data['Y'].max()
 
 
-def map_telemetry_data(telemetry_data: pandas.DataFrame) -> None:
+def map_telemetry_data(telemetry_data: DataFrame) -> None:
 
     min_x, max_x = get_min_max_x(telemetry_data)
     min_y, max_y = get_min_max_y(telemetry_data)
 
 
 
-    print(f""
+    print(f"X range: {min_x} - {max_x}")
+    print(f"Y range: {min_y} - {max_y}")
 
     pass
 
