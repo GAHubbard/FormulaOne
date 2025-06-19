@@ -6,6 +6,8 @@ import json
 from pandas import DataFrame
 import time
 import matplotlib.pyplot as plt
+from datetime import datetime, timezone
+import pandas as pd
 
 FILE_PATH_TO_TELEMETRY = r"C:\Users\Matth\PycharmProjects\F1\FormulaOne\dashboard\application\position_map_44_2025-06-15-1444.txt"
 
@@ -28,6 +30,7 @@ def convert_telemetry_file_to_dataframe(telemetry_file_path: str) -> DataFrame:
 
     # convert the list to a dataframe
     telemetry_dataframe = DataFrame(list_of_telemetry_data)
+    telemetry_dataframe['Timestamp'] = pd.to_datetime(telemetry_dataframe['Timestamp'], utc=True)
 
     return telemetry_dataframe
 
@@ -79,16 +82,32 @@ def map_telemetry_data(telemetry_data: DataFrame) -> None:
     plt.show()
     x_so_far = []
     y_so_far = []
+    time_now = datetime.now(timezone.utc)
 
     # plot per record per 1 second
+    """
     for record in telemetry_data.itertuples():
         x_so_far.append(record.X)
         y_so_far.append(record.Y)
         map_x_y.set_offsets(list(zip(x_so_far, y_so_far)))
         plt.draw()
         plt.pause(1)
+    """
 
     # loop while preserving real time passing
+    time_offset = time_now - telemetry_data.iloc[0].Timestamp
+    record_index = 0
+    while True:
+        race_time = datetime.now(timezone.utc) - time_offset
+        if telemetry_data.iloc[record_index].Timestamp < race_time:
+            x_so_far.append(telemetry_data.iloc[record_index].X)
+            y_so_far.append(telemetry_data.iloc[record_index].Y)
+            map_x_y.set_offsets(list(zip(x_so_far, y_so_far)))
+            plt.draw()
+            plt.pause(.001)
+            record_index = record_index + 1
+        if record_index >= len(telemetry_data):
+            break
 
 if __name__ == "__main__":
     telemetry_df = convert_telemetry_file_to_dataframe(FILE_PATH_TO_TELEMETRY)
